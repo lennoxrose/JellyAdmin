@@ -14,6 +14,7 @@
           <div class="fieldDescription checkboxFieldDescription">Turn off to get the stock admin dashboard back. Reload the page after saving.</div>
         </div>
         <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+        <pre id="JellyAdminStatus" class="fieldDescription"></pre>
       </form>
     </div>
   </div>
@@ -23,6 +24,12 @@
       var page = document.querySelector('#JellyAdminPage');
       page.addEventListener('pageshow', function () {
         ApiClient.getPluginConfiguration(id).then(function (c) { page.querySelector('#Enabled').checked = c.Enabled; });
+        var out = page.querySelector('#JellyAdminStatus');
+        var linked = !!document.querySelector('link[href*="JellyAdmin/style.css"]');
+        out.textContent = 'Stylesheet linked in this page: ' + linked + '\nbody.dashboardDocument present: ' + document.body.classList.contains('dashboardDocument');
+        fetch('/JellyAdmin/style.css', { cache: 'no-store' }).then(function (r) {
+          out.textContent += '\n/JellyAdmin/style.css: HTTP ' + r.status + ' ' + (r.headers.get('content-type') || '');
+        });
       });
       page.querySelector('#JellyAdminForm').addEventListener('submit', function (e) {
         e.preventDefault();

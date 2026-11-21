@@ -22,7 +22,13 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public IEnumerable<PluginPageInfo> GetPages() =>
     [
-        new PluginPageInfo { Name = Name, EmbeddedResourcePath = GetType().Namespace + ".config.html" }
+        new PluginPageInfo
+        {
+            Name = Name,
+            DisplayName = "Jelly Admin",
+            EmbeddedResourcePath = GetType().Namespace + ".config.html",
+            EnableInMainMenu = true
+        }
     ];
 }
 

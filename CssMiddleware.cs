@@ -35,7 +35,11 @@ public class CssMiddleware
         }
 
         // Need plain text to rewrite, so ask downstream not to compress.
+        // Also drop conditional headers: a 304 has no body to rewrite and the browser would reuse its unpatched cached copy.
         ctx.Request.Headers.Remove("Accept-Encoding");
+        ctx.Request.Headers.Remove("If-None-Match");
+        ctx.Request.Headers.Remove("If-Modified-Since");
+        ctx.Request.Headers.Remove("Range");
         var original = ctx.Response.Body;
         using var buffer = new MemoryStream();
         ctx.Response.Body = buffer;
@@ -55,6 +59,9 @@ public class CssMiddleware
         var html = new StreamReader(buffer, Encoding.UTF8).ReadToEnd().Replace("</head>", Link);
         var bytes = Encoding.UTF8.GetBytes(html);
         ctx.Response.ContentLength = bytes.Length;
+        ctx.Response.Headers.ETag = default;
+        ctx.Response.Headers.CacheControl = "no-cache";
+        ctx.Response.Headers["X-JellyAdmin"] = "injected";
         await original.WriteAsync(bytes);
     }
 }
