@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Jelly Admin Theme</title></head>
+<body>
+<div id="JellyAdminPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+  <div data-role="content">
+    <div class="content-primary">
+      <form id="JellyAdminForm">
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input id="Enabled" type="checkbox" is="emby-checkbox" />
+            <span>Enable Jelly Admin theme</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">Turn off to get the stock admin dashboard back. Reload the page after saving.</div>
+        </div>
+        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var id = '6c1f6d5e-8a3b-4f0e-9a52-3d7b1c2e4a90';
+      var page = document.querySelector('#JellyAdminPage');
+      page.addEventListener('pageshow', function () {
+        ApiClient.getPluginConfiguration(id).then(function (c) { page.querySelector('#Enabled').checked = c.Enabled; });
+      });
+      page.querySelector('#JellyAdminForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        ApiClient.getPluginConfiguration(id).then(function (c) {
+          c.Enabled = page.querySelector('#Enabled').checked;
+          ApiClient.updatePluginConfiguration(id, c).then(Dashboard.processPluginConfigurationUpdateResult);
+        });
+      });
+    })();
+  </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* Tokens and metrics from Figma file jyM75Jzra24aG35V7Xgiwx. Scoped to the admin dashboard (body.dashboardDocument). */
+body.dashboardDocument {
+  --ja-bg: #000000;
+  --ja-raised: #0d0d0d;
+  --ja-border: #1f1f1f;
+  --ja-border-strong: #2e2e2e;
+  --ja-text: #fafafa;
+  --ja-text-2: #a1a1a1;
+  --ja-muted: #8f8f8f;
+  --ja-success: #3dd68c;
+  --ja-danger: #ff6369;
+  --ja-info: #5eb1ff;
+  --ja-font: 'JetBrains Mono', ui-monospace, monospace;
+  background: var(--ja-bg);
+  color: var(--ja-text);
+  font-family: var(--ja-font);
+}
+body.dashboardDocument .MuiTypography-root,
+body.dashboardDocument .MuiButtonBase-root,
+body.dashboardDocument input,
+body.dashboardDocument select,
+body.dashboardDocument textarea,
+body.dashboardDocument button { font-family: var(--ja-font); }
+
+/* Sidebar */
+body.dashboardDocument .MuiDrawer-paper {
+  background: var(--ja-bg);
+  background-image: none;
+  border-right: 1px solid var(--ja-border);
+  padding: 16px 12px;
+  width: 264px;
+  box-sizing: border-box;
+}
+body.dashboardDocument .MuiDrawer-paper .MuiList-root { padding: 0 0 14px; }
+body.dashboardDocument .MuiListSubheader-root {
+  background: transparent;
+  color: var(--ja-muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 0 10px 3px;
+}
+body.dashboardDocument .MuiDrawer-paper .MuiListItemButton-root {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
+  gap: 10px;
+  border-radius: 6px;
+  margin-bottom: 1px;
+  color: var(--ja-text-2);
+}
+body.dashboardDocument .MuiDrawer-paper .MuiListItemButton-root:hover { background: var(--ja-raised); }
+body.dashboardDocument .MuiDrawer-paper .MuiListItemButton-root.Mui-selected {
+  background: var(--ja-raised);
+  color: var(--ja-text);
+}
+body.dashboardDocument .MuiDrawer-paper .Mui-selected .MuiListItemText-primary { font-weight: 500; color: var(--ja-text); }
+body.dashboardDocument .MuiDrawer-paper .MuiListItemIcon-root { min-width: 0; color: inherit; }
+body.dashboardDocument .MuiDrawer-paper .MuiSvgIcon-root { width: 16px; height: 16px; }
+body.dashboardDocument .MuiDrawer-paper .MuiListItemText-root { margin: 0; }
+body.dashboardDocument .MuiDrawer-paper .MuiListItemText-primary { font-size: 12px; line-height: 17px; }
+body.dashboardDocument .MuiDrawer-paper .MuiDivider-root { display: none; }
+
+/* Top bar */
+body.dashboardDocument .MuiAppBar-root {
+  background: var(--ja-bg);
+  background-image: none;
+  box-shadow: none;
+  border-bottom: 1px solid var(--ja-border);
+  color: var(--ja-text);
+}
+body.dashboardDocument .MuiToolbar-root { min-height: 52px; }
+body.dashboardDocument .MuiTab-root { font-size: 12px; text-transform: none; color: var(--ja-text-2); }
+body.dashboardDocument .MuiTab-root.Mui-selected { color: var(--ja-text); }
+body.dashboardDocument .MuiTabs-indicator { background: var(--ja-text); }
+
+/* Page content */
+body.dashboardDocument h1,
+body.dashboardDocument h2,
+body.dashboardDocument h3 { font-family: var(--ja-font); color: var(--ja-text); }
+body.dashboardDocument .MuiPaper-root,
+body.dashboardDocument .paperList {
+  background-color: var(--ja-bg);
+  background-image: none;
+  border: 1px solid var(--ja-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+body.dashboardDocument .MuiAppBar-root.MuiPaper-root,
+body.dashboardDocument .MuiDrawer-paper.MuiPaper-root { border-radius: 0; }
+body.dashboardDocument .MuiDivider-root,
+body.dashboardDocument hr { border-color: var(--ja-border); }
+body.dashboardDocument .fieldDescription,
+body.dashboardDocument .MuiTypography-caption { color: var(--ja-muted); font-size: 11px; }
+
+/* Inputs */
+body.dashboardDocument .emby-input,
+body.dashboardDocument .emby-select-withcolor,
+body.dashboardDocument .emby-textarea,
+body.dashboardDocument .MuiInputBase-root {
+  background: var(--ja-raised);
+  color: var(--ja-text);
+  border: 1px solid var(--ja-border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+}
+body.dashboardDocument .MuiOutlinedInput-notchedOutline { border: 0; }
+body.dashboardDocument .emby-input:focus,
+body.dashboardDocument .emby-textarea:focus,
+body.dashboardDocument .MuiInputBase-root.Mui-focused { border-color: var(--ja-text-2); outline: 0; box-shadow: none; }
+
+/* Buttons: primary = light fill, others outlined */
+body.dashboardDocument .button-submit,
+body.dashboardDocument .MuiButton-contained {
+  background: var(--ja-text);
+  color: var(--ja-bg);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: none;
+  text-transform: none;
+}
+body.dashboardDocument .emby-button.raised:not(.button-submit),
+body.dashboardDocument .MuiButton-outlined {
+  background: transparent;
+  color: var(--ja-text);
+  border: 1px solid var(--ja-border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  text-transform: none;
+}
+body.dashboardDocument .button-delete,
+body.dashboardDocument .MuiButton-colorError { color: var(--ja-danger); border-color: var(--ja-danger); }
+
+/* Toggles */
+body.dashboardDocument .MuiSwitch-track { background: var(--ja-border-strong); opacity: 1; }
+body.dashboardDocument .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track { background: var(--ja-success); opacity: 1; }
+body.dashboardDocument .MuiSwitch-thumb { background: var(--ja-text); }
+body.dashboardDocument .emby-checkbox:checked + span + .checkboxOutline { background: var(--ja-success); border-color: var(--ja-success); }
+
+/* Tables */
+body.dashboardDocument .MuiTableCell-root { border-bottom: 1px solid var(--ja-border); font-size: 12px; color: var(--ja-text); }
+body.dashboardDocument .MuiTableCell-head { color: var(--ja-muted); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; }
