@@ -1,666 +1,291 @@
-/* Analytics page (Figma 31:1047). Markup is a 1:1 conversion of the design at its 1656x1028 content size; figures are the design's sample data (no analytics API exists in Jellyfin core). */
+/* Analytics page (Figma 31:1047), laid out at the design's 1656x1028 content size.
+   Playback figures come from the Playback Reporting plugin (SQL over its PlaybackActivity table); library figures from Items.
+   Bandwidth and failed streams have no data source in Jellyfin, so they show an empty state. */
 (function () {
-  const { h } = window.JA;
-  const B = '/JellyAdmin/';
-  const HTML = `
-<p style="position:absolute;font-weight:700;line-height:normal;left:48px;color:#ededed;font-size:20px;top:24px;letter-spacing:-0.4px;white-space:nowrap">Analytics</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:48px;color:#7a7a7a;font-size:11px;top:52px;white-space:nowrap">Playback, bandwidth and library insights across all users and devices</p>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:32px;left:1296px;border-radius:6px;top:24px;width:244px"></div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:500;line-height:normal;left:1321px;color:#7a7a7a;font-size:11px;text-align:center;top:33px;width:46px">24h</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:500;line-height:normal;left:1369px;color:#7a7a7a;font-size:11px;text-align:center;top:33px;width:46px">7d</p>
-<div style="position:absolute;background:#ededed;height:28px;left:1394px;border-radius:4px;top:26px;width:46px"></div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:500;line-height:normal;left:1417px;color:#0d0d0d;font-size:11px;text-align:center;top:33px;width:46px">30d</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:500;line-height:normal;left:1465px;color:#7a7a7a;font-size:11px;text-align:center;top:33px;width:46px">90d</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:500;line-height:normal;left:1513px;color:#7a7a7a;font-size:11px;text-align:center;top:33px;width:46px">1y</p>
-<div style="position:absolute;background:#ededed;height:32px;left:1552px;border-radius:6px;top:24px;width:56px"></div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:1580px;color:#0d0d0d;font-size:11px;text-align:center;top:33px;width:56px">Export</p>
-<div style="position:absolute;background:#1f1f1f;height:1px;left:48px;top:86px;width:1560px"></div>
-<div style="position:absolute;background:#1f1f1f;height:1px;left:48px;top:196px;width:1560px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:48px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">PLAYS</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:48px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">48,291</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:48px;color:#4ade80;font-size:11px;top:160px;white-space:nowrap">+12.4%</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:98px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:23.552px;left:158px;top:109.45px;width:100px">
-<div style="position:absolute;inset:-3.19% -0.75%">
-<img alt="" src="__B__icons/an/spark.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#1f1f1f;height:111px;left:308px;top:86px;width:1px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:332px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">WATCH TIME</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:332px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">1,942 h</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:332px;color:#4ade80;font-size:11px;top:160px;white-space:nowrap">+8.1%</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:375px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:19.259px;left:442px;top:108.37px;width:100px">
-<div style="position:absolute;inset:-3.9% -0.75%">
-<img alt="" src="__B__icons/an/spark1.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#1f1f1f;height:111px;left:568px;top:86px;width:1px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:592px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">ACTIVE USERS</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:592px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">37</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:592px;color:#4ade80;font-size:11px;top:160px;white-space:nowrap">+3</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:614px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:20.913px;left:702px;top:108.63px;width:100px">
-<div style="position:absolute;inset:-3.59% -0.75%">
-<img alt="" src="__B__icons/an/spark2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#1f1f1f;height:111px;left:828px;top:86px;width:1px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:852px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">BANDWIDTH</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:852px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">2.84 TB</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:852px;color:#f5b942;font-size:11px;top:160px;white-space:nowrap">+21.6%</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:902px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:18.214px;left:962px;top:110.56px;width:100px">
-<div style="position:absolute;inset:-4.12% -0.75%">
-<img alt="" src="__B__icons/an/spark3.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#1f1f1f;height:111px;left:1088px;top:86px;width:1px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:1112px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">TRANSCODES</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:1112px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">6.2%</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:1112px;color:#4ade80;font-size:11px;top:160px;white-space:nowrap">-1.4%</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:1155px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:19.364px;left:1222px;top:109.89px;width:100px">
-<div style="position:absolute;inset:-3.87% -0.75%">
-<img alt="" src="__B__icons/an/spark4.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#1f1f1f;height:111px;left:1348px;top:86px;width:1px"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:1372px;color:#7a7a7a;font-size:10px;top:102px;letter-spacing:0.6px;white-space:nowrap">FAILED STREAMS</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:1372px;color:#ededed;font-size:26px;top:122px;letter-spacing:-0.8px;white-space:nowrap">0.7%</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:1372px;color:#f87171;font-size:11px;top:160px;white-space:nowrap">+0.2%</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:1415px;color:#7a7a7a;font-size:10px;top:160px;white-space:nowrap">vs prev. period</p>
-<div style="position:absolute;height:19.699px;left:1482px;top:108.52px;width:100px">
-<div style="position:absolute;inset:-3.81% -0.75%">
-<img alt="" src="__B__icons/an/spark5.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:308px;left:48px;border-radius:8px;top:218px;width:1020px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Playback activity</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Plays per day · stacked by media type</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:1001px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">Last 30 days</p>
-<div style="position:absolute;height:0;left:61px;top:69px;width:930px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:55px;color:#7a7a7a;font-size:9px;text-align:right;top:63px;width:34px">600</p>
-<div style="position:absolute;height:0;left:61px;top:114px;width:930px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:55px;color:#7a7a7a;font-size:9px;text-align:right;top:108px;width:34px">450</p>
-<div style="position:absolute;height:0;left:61px;top:159px;width:930px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:55px;color:#7a7a7a;font-size:9px;text-align:right;top:153px;width:34px">300</p>
-<div style="position:absolute;height:0;left:61px;top:204px;width:930px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:55px;color:#7a7a7a;font-size:9px;text-align:right;top:198px;width:34px">150</p>
-<div style="position:absolute;height:0;left:61px;top:249px;width:930px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid1.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:55px;color:#7a7a7a;font-size:9px;text-align:right;top:243px;width:34px">0</p>
-<div style="position:absolute;height:73.005px;left:61px;top:104.99px;width:930px">
-<div style="position:absolute;inset:-0.68% 0 -0.69% 0">
-<img alt="" src="__B__icons/an/area.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:55.608px;left:61px;top:104.99px;width:930px">
-<div style="position:absolute;inset:-1.8% -0.11%">
-<img alt="" src="__B__icons/an/line.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:84.566px;left:61px;top:127.74px;width:930px">
-<div style="position:absolute;inset:-0.59% 0 -0.61% 0">
-<img alt="" src="__B__icons/an/area1.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:51.311px;left:61px;top:127.74px;width:930px">
-<div style="position:absolute;inset:-1.95% -0.11%">
-<img alt="" src="__B__icons/an/line1.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:75.633px;left:61px;top:173.37px;width:930px">
-<div style="position:absolute;inset:-0.66% 0">
-<img alt="" src="__B__icons/an/area2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:39.188px;left:61px;top:173.37px;width:930px">
-<div style="position:absolute;inset:-2.55% -0.11%">
-<img alt="" src="__B__icons/an/line2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:51px;color:#7a7a7a;font-size:9px;top:259px;white-space:nowrap">Oct 23</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:267.28px;color:#7a7a7a;font-size:9px;top:259px;white-space:nowrap">Oct 30</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:483.56px;color:#7a7a7a;font-size:9px;top:259px;white-space:nowrap">Nov 6</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:699.84px;color:#7a7a7a;font-size:9px;top:259px;white-space:nowrap">Nov 13</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:916.12px;color:#7a7a7a;font-size:9px;top:259px;white-space:nowrap">Nov 20</p>
-<div style="position:absolute;left:17px;width:8px;height:8px;top:284px">
-<img alt="" src="__B__icons/an/key.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:31px;color:#a8a8a8;font-size:10px;top:281px;white-space:nowrap">Movies</p>
-<div style="position:absolute;left:88.8px;width:8px;height:8px;top:284px">
-<img alt="" src="__B__icons/an/key1.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:102.8px;color:#a8a8a8;font-size:10px;top:281px;white-space:nowrap">Shows</p>
-<div style="position:absolute;left:154.3px;width:8px;height:8px;top:284px">
-<img alt="" src="__B__icons/an/key2.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:168.3px;color:#a8a8a8;font-size:10px;top:281px;white-space:nowrap">Live TV</p>
-<div style="position:absolute;height:180px;left:606.17px;top:69px;width:0">
-<div style="position:absolute;inset:0 -0.5px">
-<img alt="" src="__B__icons/an/marker.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;left:602.17px;width:8px;height:8px;top:124.33px">
-<img alt="" src="__B__icons/an/peak.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<div style="position:absolute;background:#141414;border:1px solid;border-color:#2a2a2a;height:40px;left:616.17px;border-radius:6px;top:75px;width:128px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:626.17px;color:#7a7a7a;font-size:9px;top:81px;white-space:nowrap">Nov 9</p>
-<p style="position:absolute;font-weight:700;line-height:normal;left:626.17px;color:#ededed;font-size:11px;top:95px;white-space:nowrap">612 plays</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:308px;left:1092px;border-radius:8px;top:218px;width:516px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Playback method</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Direct vs. transcoded</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:497px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">Last 30 days</p>
-<div style="position:absolute;left:39px;width:160px;height:160px;top:89px">
-<div style="position:absolute;inset:0 0 0 27.68%">
-<img alt="" src="__B__icons/an/segdirectplay.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;left:39px;width:160px;height:160px;top:89px">
-<div style="position:absolute;inset:22.25% 67.82% 6.18% 0">
-<img alt="" src="__B__icons/an/segdirectstream.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;left:39px;width:160px;height:160px;top:89px">
-<div style="position:absolute;inset:0 51.48% 71.75% 9.55%">
-<img alt="" src="__B__icons/an/segtranscode.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:119px;color:#ededed;font-size:22px;text-align:center;top:151px;letter-spacing:-0.5px;width:100px">48.3k</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:119px;color:#7a7a7a;font-size:10px;text-align:center;top:179px;width:100px">total plays</p>
-<div style="position:absolute;left:259px;width:10px;height:10px;top:98px">
-<img alt="" src="__B__icons/an/key3.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:277px;color:#ededed;font-size:12px;top:95px;white-space:nowrap">Direct Play</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:700;line-height:normal;left:497px;font-size:12px;text-align:right;color:#fff;top:95px;width:78px">58%</p>
-<div style="position:absolute;background:#1a1a1a;height:4px;left:277px;border-radius:2px;top:119px;width:220px"></div>
-<div style="position:absolute;background:#4ade80;height:4px;left:277px;border-radius:2px;top:119px;width:127.6px"></div>
-<div style="position:absolute;left:259px;width:10px;height:10px;top:156px">
-<img alt="" src="__B__icons/an/key4.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:277px;color:#ededed;font-size:12px;top:153px;white-space:nowrap">Direct Stream</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:700;line-height:normal;left:497px;font-size:12px;text-align:right;color:#fff;top:153px;width:78px">27%</p>
-<div style="position:absolute;background:#1a1a1a;height:4px;left:277px;border-radius:2px;top:177px;width:220px"></div>
-<div style="position:absolute;background:#00a4dc;height:4px;left:277px;border-radius:2px;top:177px;width:59.4px"></div>
-<div style="position:absolute;left:259px;width:10px;height:10px;top:214px">
-<img alt="" src="__B__icons/an/key5.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:277px;color:#ededed;font-size:12px;top:211px;white-space:nowrap">Transcode</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:700;line-height:normal;left:497px;font-size:12px;text-align:right;color:#fff;top:211px;width:78px">15%</p>
-<div style="position:absolute;background:#1a1a1a;height:4px;left:277px;border-radius:2px;top:235px;width:220px"></div>
-<div style="position:absolute;background:#f5b942;height:4px;left:277px;border-radius:2px;top:235px;width:33px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:281px;white-space:nowrap">Transcode reasons: subtitles (41%), audio codec (33%), bitrate (26%)</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:244px;left:48px;border-radius:8px;top:548px;width:504px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Bandwidth</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Mbps · peak vs. average</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">Today</p>
-<div style="position:absolute;height:0;left:55px;top:63px;width:420px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:49px;color:#7a7a7a;font-size:9px;text-align:right;top:57px;width:34px">120</p>
-<div style="position:absolute;height:0;left:55px;top:103px;width:420px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:49px;color:#7a7a7a;font-size:9px;text-align:right;top:97px;width:34px">80</p>
-<div style="position:absolute;height:0;left:55px;top:143px;width:420px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid2.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:49px;color:#7a7a7a;font-size:9px;text-align:right;top:137px;width:34px">40</p>
-<div style="position:absolute;height:0;left:55px;top:183px;width:420px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/grid3.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:49px;color:#7a7a7a;font-size:9px;text-align:right;top:177px;width:34px">0</p>
-<div style="position:absolute;height:107.059px;left:55px;top:75.94px;width:420px">
-<div style="position:absolute;inset:-0.47% -0.12%">
-<img alt="" src="__B__icons/an/area3.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:85.167px;left:55px;top:75.94px;width:420px">
-<div style="position:absolute;inset:-1.17% -0.24%">
-<img alt="" src="__B__icons/an/line3.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:58.883px;left:55px;top:124.12px;width:420px">
-<div style="position:absolute;inset:-0.85% -0.12%">
-<img alt="" src="__B__icons/an/area4.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<div style="position:absolute;height:46.842px;left:55px;top:124.12px;width:420px">
-<div style="position:absolute;inset:-2.13% -0.24%">
-<img alt="" src="__B__icons/an/line4.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:41px;color:#7a7a7a;font-size:9px;top:191px;white-space:nowrap">00:00</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:146px;color:#7a7a7a;font-size:9px;top:191px;white-space:nowrap">06:00</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:251px;color:#7a7a7a;font-size:9px;top:191px;white-space:nowrap">12:00</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:356px;color:#7a7a7a;font-size:9px;top:191px;white-space:nowrap">18:00</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:461px;color:#7a7a7a;font-size:9px;top:191px;white-space:nowrap">24:00</p>
-<div style="position:absolute;left:17px;width:8px;height:8px;top:216px">
-<img alt="" src="__B__icons/an/key6.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:31px;color:#a8a8a8;font-size:10px;top:213px;white-space:nowrap">Peak</p>
-<div style="position:absolute;left:76.2px;width:8px;height:8px;top:216px">
-<img alt="" src="__B__icons/an/key7.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:90.2px;color:#a8a8a8;font-size:10px;top:213px;white-space:nowrap">Average</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:244px;left:576px;border-radius:8px;top:548px;width:504px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Watch time heatmap</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Hour of day × weekday</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">Avg. hours</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:73px;white-space:nowrap">Mon</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#141414;left:220.4px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:239px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:257.6px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:276.2px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#c4a6ff;left:294.8px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#8b5cf6;left:313.4px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:332px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:350.6px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#8b5cf6;left:369.2px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:387.8px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:425px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#2b1b55;left:462.2px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:71px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:91.6px;white-space:nowrap">Tue</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:220.4px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:239px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:257.6px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:276.2px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:294.8px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:332px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:350.6px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#8b5cf6;left:369.2px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#8b5cf6;left:387.8px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:425px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:462.2px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:89.6px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:110.2px;white-space:nowrap">Wed</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#2b1b55;left:220.4px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#2b1b55;left:239px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#2b1b55;left:257.6px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#5b34b0;left:276.2px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#c4a6ff;left:294.8px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#c4a6ff;left:332px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#c4a6ff;left:350.6px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#c4a6ff;left:369.2px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#5b34b0;left:387.8px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#8b5cf6;left:425px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#2b1b55;left:443.6px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#5b34b0;left:462.2px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:108.2px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:128.8px;white-space:nowrap">Thu</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#2b1b55;left:220.4px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#2b1b55;left:239px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#2b1b55;left:257.6px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#5b34b0;left:276.2px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#5b34b0;left:294.8px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#c4a6ff;left:332px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#8b5cf6;left:350.6px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#c4a6ff;left:369.2px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#c4a6ff;left:387.8px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#5b34b0;left:425px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#2b1b55;left:462.2px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<div style="position:absolute;background:#141414;left:480.8px;border-radius:3px;width:14px;height:14px;top:126.8px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:147.4px;white-space:nowrap">Fri</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#141414;left:220.4px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#2b1b55;left:239px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#2b1b55;left:257.6px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#8b5cf6;left:276.2px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#8b5cf6;left:294.8px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#5b34b0;left:332px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#8b5cf6;left:350.6px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#c4a6ff;left:369.2px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#c4a6ff;left:387.8px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#8b5cf6;left:406.4px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#5b34b0;left:425px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#2b1b55;left:462.2px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:145.4px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:166px;white-space:nowrap">Sat</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#2b1b55;left:220.4px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:239px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:257.6px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:276.2px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:294.8px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:332px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:350.6px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:369.2px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:387.8px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#c4a6ff;left:425px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#5b34b0;left:462.2px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:164px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:9px;top:184.6px;white-space:nowrap">Sun</p>
-<div style="position:absolute;background:#141414;left:53px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:71.6px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:90.2px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:108.8px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:127.4px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:146px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:164.6px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:183.2px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#141414;left:201.8px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:220.4px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:239px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:257.6px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:276.2px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#8b5cf6;left:294.8px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:313.4px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:332px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:350.6px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#c4a6ff;left:369.2px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#8b5cf6;left:387.8px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:406.4px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#8b5cf6;left:425px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#5b34b0;left:443.6px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:462.2px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<div style="position:absolute;background:#2b1b55;left:480.8px;border-radius:3px;width:14px;height:14px;top:182.6px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:52px;color:#7a7a7a;font-size:9px;top:207.2px;white-space:nowrap">00</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:163.6px;color:#7a7a7a;font-size:9px;top:207.2px;white-space:nowrap">06</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:275.2px;color:#7a7a7a;font-size:9px;top:207.2px;white-space:nowrap">12</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:386.8px;color:#7a7a7a;font-size:9px;top:207.2px;white-space:nowrap">18</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:479.8px;color:#7a7a7a;font-size:9px;top:207.2px;white-space:nowrap">23</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:379px;color:#7a7a7a;font-size:9px;top:37px;white-space:nowrap">Less</p>
-<div style="position:absolute;background:#141414;left:403px;border-radius:2px;width:12px;height:12px;top:37px"></div>
-<div style="position:absolute;background:#2b1b55;left:417px;border-radius:2px;width:12px;height:12px;top:37px"></div>
-<div style="position:absolute;background:#5b34b0;left:431px;border-radius:2px;width:12px;height:12px;top:37px"></div>
-<div style="position:absolute;background:#8b5cf6;left:445px;border-radius:2px;width:12px;height:12px;top:37px"></div>
-<div style="position:absolute;background:#c4a6ff;left:459px;border-radius:2px;width:12px;height:12px;top:37px"></div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:475px;color:#7a7a7a;font-size:9px;top:37px;width:26px">More</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:244px;left:1104px;border-radius:8px;top:548px;width:504px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Top clients</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Plays by app</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">30 days</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:65px;white-space:nowrap">Jellyfin Web</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:67px;width:260px"></div>
-<div style="position:absolute;background:#a970ff;height:10px;left:149px;border-radius:5px;top:67px;width:260px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:65px;width:66px">18420</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:93px;white-space:nowrap">Jellyfin Android</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:95px;width:260px"></div>
-<div style="position:absolute;background:#00a4dc;height:10px;left:149px;border-radius:5px;top:95px;width:158.512px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:93px;width:66px">11230</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:121px;white-space:nowrap">Infuse</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:123px;width:260px"></div>
-<div style="position:absolute;background:#f472b6;height:10px;left:149px;border-radius:5px;top:123px;width:110.662px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:121px;width:66px">7840</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:149px;white-space:nowrap">Swiftfin</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:151px;width:260px"></div>
-<div style="position:absolute;background:#4ade80;height:10px;left:149px;border-radius:5px;top:151px;width:72.269px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:149px;width:66px">5120</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:177px;white-space:nowrap">Jellyfin TV</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:179px;width:260px"></div>
-<div style="position:absolute;background:#f5b942;height:10px;left:149px;border-radius:5px;top:179px;width:47.144px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:177px;width:66px">3340</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:17px;color:#ededed;font-size:11px;top:205px;white-space:nowrap">Kodi</p>
-<div style="position:absolute;background:#161616;height:10px;left:149px;border-radius:5px;top:207px;width:260px"></div>
-<div style="position:absolute;background:#2dd4bf;height:10px;left:149px;border-radius:5px;top:207px;width:33.043px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:485px;color:#b5b5b5;font-size:11px;text-align:right;top:205px;width:66px">2341</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:188px;left:48px;border-radius:8px;top:816px;width:372px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Top users</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Hours watched</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">30d</p>
-<div style="position:absolute;left:17px;width:16px;height:16px;top:61px">
-<img alt="" src="__B__icons/an/avatar.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:25px;color:#0d0d0d;font-size:9px;text-align:center;top:64px;width:16px">L</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:41px;color:#ededed;font-size:11px;top:63px;white-space:nowrap">lennox</p>
-<div style="position:absolute;background:#161616;height:6px;left:119px;border-radius:3px;top:66px;width:170px"></div>
-<div style="position:absolute;background:#a970ff;height:6px;left:119px;border-radius:3px;top:66px;width:170px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:63px;width:58px">512h</p>
-<div style="position:absolute;left:17px;width:16px;height:16px;top:85px">
-<img alt="" src="__B__icons/an/avatar1.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:25px;color:#0d0d0d;font-size:9px;text-align:center;top:88px;width:16px">C</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:41px;color:#ededed;font-size:11px;top:87px;white-space:nowrap">crackyy</p>
-<div style="position:absolute;background:#161616;height:6px;left:119px;border-radius:3px;top:90px;width:170px"></div>
-<div style="position:absolute;background:#00a4dc;height:6px;left:119px;border-radius:3px;top:90px;width:128.828px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:87px;width:58px">388h</p>
-<div style="position:absolute;left:17px;width:16px;height:16px;top:109px">
-<img alt="" src="__B__icons/an/avatar2.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:25px;color:#0d0d0d;font-size:9px;text-align:center;top:112px;width:16px">G</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:41px;color:#ededed;font-size:11px;top:111px;white-space:nowrap">guest</p>
-<div style="position:absolute;background:#161616;height:6px;left:119px;border-radius:3px;top:114px;width:170px"></div>
-<div style="position:absolute;background:#f472b6;height:6px;left:119px;border-radius:3px;top:114px;width:71.055px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:111px;width:58px">214h</p>
-<div style="position:absolute;left:17px;width:16px;height:16px;top:133px">
-<img alt="" src="__B__icons/an/avatar3.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:25px;color:#0d0d0d;font-size:9px;text-align:center;top:136px;width:16px">M</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:41px;color:#ededed;font-size:11px;top:135px;white-space:nowrap">mum</p>
-<div style="position:absolute;background:#161616;height:6px;left:119px;border-radius:3px;top:138px;width:170px"></div>
-<div style="position:absolute;background:#4ade80;height:6px;left:119px;border-radius:3px;top:138px;width:47.148px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:135px;width:58px">142h</p>
-<div style="position:absolute;left:17px;width:16px;height:16px;top:157px">
-<img alt="" src="__B__icons/an/avatar4.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:700;line-height:normal;left:25px;color:#0d0d0d;font-size:9px;text-align:center;top:160px;width:16px">J</p>
-<p style="position:absolute;font-weight:500;line-height:normal;left:41px;color:#ededed;font-size:11px;top:159px;white-space:nowrap">jonas</p>
-<div style="position:absolute;background:#161616;height:6px;left:119px;border-radius:3px;top:162px;width:170px"></div>
-<div style="position:absolute;background:#f5b942;height:6px;left:119px;border-radius:3px;top:162px;width:31.875px"></div>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:159px;width:58px">96h</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:188px;left:444px;border-radius:8px;top:816px;width:372px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Library growth</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">New items per month</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">2025–26</p>
-<div style="position:absolute;height:26.563px;left:20px;border-radius:3px;top:132.44px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:40.625px;left:48px;border-radius:3px;top:118.38px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:32.031px;left:76px;border-radius:3px;top:126.97px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:54.688px;left:104px;border-radius:3px;top:104.31px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:49.219px;left:132px;border-radius:3px;top:109.78px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:68.75px;left:160px;border-radius:3px;top:90.25px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:58.594px;left:188px;border-radius:3px;top:100.41px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:75px;left:216px;border-radius:3px;top:84px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:64.063px;left:244px;border-radius:3px;top:94.94px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:85.938px;left:272px;border-radius:3px;top:73.06px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:73.438px;left:300px;border-radius:3px;top:85.56px;width:18px;background:linear-gradient(to bottom,#a970ff,rgba(169,112,255,0.45))"></div>
-<div style="position:absolute;height:100px;left:328px;border-radius:3px;top:59px;width:18px;background:linear-gradient(to bottom,#00a4dc,rgba(0,164,220,0.45))"></div>
-<div style="position:absolute;height:0;left:17px;top:159px;width:336px">
-<div style="position:absolute;inset:-0.5px 0">
-<img alt="" src="__B__icons/an/axis.svg" style="display:block;max-width:none;width:100%;height:100%">
-</div>
-</div>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:29px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">J</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:57px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">F</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:85px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">M</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:113px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">A</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:141px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">M</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:169px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">J</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:197px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">J</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:225px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">A</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:253px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">S</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:281px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">O</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:309px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">N</p>
-<p style="transform:translateX(-50%);position:absolute;font-weight:400;line-height:normal;left:337px;color:#7a7a7a;font-size:9px;text-align:center;top:165px;width:18px">D</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:188px;left:840px;border-radius:8px;top:816px;width:372px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Resolution &amp; codec</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Share of library by stream</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">Now</p>
-<div style="position:absolute;background:#a970ff;height:22px;left:17px;border-radius:4px;top:61px;width:71.92px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:21px;color:#0d0d0d;font-size:10px;top:66px;white-space:nowrap">22%</p>
-<div style="position:absolute;background:#00a4dc;height:22px;left:90.92px;border-radius:4px;top:61px;width:169.36px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:94.92px;color:#0d0d0d;font-size:10px;top:66px;white-space:nowrap">51%</p>
-<div style="position:absolute;background:#4ade80;height:22px;left:262.28px;border-radius:4px;top:61px;width:55.12px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:266.28px;color:#0d0d0d;font-size:10px;top:66px;white-space:nowrap">17%</p>
-<div style="position:absolute;background:#f5b942;height:22px;left:319.4px;border-radius:4px;top:61px;width:31.6px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:323.4px;color:#0d0d0d;font-size:10px;top:66px;white-space:nowrap">10%</p>
-<div style="position:absolute;left:17px;width:8px;height:8px;top:96px">
-<img alt="" src="__B__icons/an/key.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:31px;color:#a8a8a8;font-size:10px;top:93px;white-space:nowrap">4K</p>
-<div style="position:absolute;left:63.6px;width:8px;height:8px;top:96px">
-<img alt="" src="__B__icons/an/key6.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:77.6px;color:#a8a8a8;font-size:10px;top:93px;white-space:nowrap">1080p</p>
-<div style="position:absolute;left:129.1px;width:8px;height:8px;top:96px">
-<img alt="" src="__B__icons/an/key8.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:143.1px;color:#a8a8a8;font-size:10px;top:93px;white-space:nowrap">720p</p>
-<div style="position:absolute;left:188.3px;width:8px;height:8px;top:96px">
-<img alt="" src="__B__icons/an/key7.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:202.3px;color:#a8a8a8;font-size:10px;top:93px;white-space:nowrap">SD</p>
-<div style="position:absolute;background:#f472b6;height:22px;left:17px;border-radius:4px;top:127px;width:159.28px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:21px;color:#0d0d0d;font-size:10px;top:132px;white-space:nowrap">48%</p>
-<div style="position:absolute;background:#2dd4bf;height:22px;left:178.28px;border-radius:4px;top:127px;width:129.04px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:182.28px;color:#0d0d0d;font-size:10px;top:132px;white-space:nowrap">39%</p>
-<div style="position:absolute;background:#fb923c;height:22px;left:309.32px;border-radius:4px;top:127px;width:28.24px"></div>
-<p style="position:absolute;font-weight:700;line-height:normal;left:313.32px;color:#0d0d0d;font-size:10px;top:132px;white-space:nowrap">9%</p>
-<div style="position:absolute;background:#6b6b6b;height:22px;left:339.56px;border-radius:4px;top:127px;width:11.44px"></div>
-<div style="position:absolute;left:17px;width:8px;height:8px;top:162px">
-<img alt="" src="__B__icons/an/key1.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:31px;color:#a8a8a8;font-size:10px;top:159px;white-space:nowrap">HEVC</p>
-<div style="position:absolute;left:76.2px;width:8px;height:8px;top:162px">
-<img alt="" src="__B__icons/an/key2.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:90.2px;color:#a8a8a8;font-size:10px;top:159px;white-space:nowrap">H.264</p>
-<div style="position:absolute;left:141.7px;width:8px;height:8px;top:162px">
-<img alt="" src="__B__icons/an/key9.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:155.7px;color:#a8a8a8;font-size:10px;top:159px;white-space:nowrap">AV1</p>
-<div style="position:absolute;left:194.6px;width:8px;height:8px;top:162px">
-<img alt="" src="__B__icons/an/key10.svg" style="position:absolute;display:block;inset:0;max-width:none;width:100%;height:100%">
-</div>
-<p style="position:absolute;font-weight:400;line-height:normal;left:208.6px;color:#a8a8a8;font-size:10px;top:159px;white-space:nowrap">Other</p>
-</div>
-<div style="position:absolute;background:#000;border:1px solid;border-color:#1f1f1f;height:188px;left:1236px;border-radius:8px;top:816px;width:372px">
-<p style="position:absolute;font-weight:700;line-height:normal;left:17px;color:#ededed;font-size:13px;top:15px;white-space:nowrap">Top content</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:10px;top:34px;white-space:nowrap">Most played</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#7a7a7a;font-size:10px;text-align:right;top:16px;width:200px">30d</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:11px;top:61px;white-space:nowrap">1</p>
-<div style="position:absolute;left:37px;border-radius:4px;width:22px;height:22px;top:59px;background:linear-gradient(to bottom,rgba(0,164,220,0.9),rgba(0,164,220,0.4))"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:69px;color:#ededed;font-size:11px;top:63px;white-space:nowrap">Tenet</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:63px;width:104px">212 plays</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:11px;top:86px;white-space:nowrap">2</p>
-<div style="position:absolute;left:37px;border-radius:4px;width:22px;height:22px;top:84px;background:linear-gradient(to bottom,rgba(169,112,255,0.9),rgba(169,112,255,0.4))"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:69px;color:#ededed;font-size:11px;top:88px;white-space:nowrap">One Piece</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:88px;width:104px">198 plays</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:11px;top:111px;white-space:nowrap">3</p>
-<div style="position:absolute;left:37px;border-radius:4px;width:22px;height:22px;top:109px;background:linear-gradient(to bottom,rgba(74,222,128,0.9),rgba(74,222,128,0.4))"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:69px;color:#ededed;font-size:11px;top:113px;white-space:nowrap">The Leftovers</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:113px;width:104px">141 plays</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:11px;top:136px;white-space:nowrap">4</p>
-<div style="position:absolute;left:37px;border-radius:4px;width:22px;height:22px;top:134px;background:linear-gradient(to bottom,rgba(244,114,182,0.9),rgba(244,114,182,0.4))"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:69px;color:#ededed;font-size:11px;top:138px;white-space:nowrap">Dark</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:138px;width:104px">97 plays</p>
-<p style="position:absolute;font-weight:400;line-height:normal;left:17px;color:#7a7a7a;font-size:11px;top:161px;white-space:nowrap">5</p>
-<div style="position:absolute;left:37px;border-radius:4px;width:22px;height:22px;top:159px;background:linear-gradient(to bottom,rgba(245,185,66,0.9),rgba(245,185,66,0.4))"></div>
-<p style="position:absolute;font-weight:500;line-height:normal;left:69px;color:#ededed;font-size:11px;top:163px;white-space:nowrap">Dune</p>
-<p style="transform:translateX(-100%);position:absolute;font-weight:400;line-height:normal;left:353px;color:#b5b5b5;font-size:11px;text-align:right;top:163px;width:104px">84 plays</p>
-</div>
-`;
+  const { h, get, post, toast } = window.JA;
+  const PU = '#a970ff', BL = '#00a4dc', PK = '#f472b6', GR = '#4ade80', AM = '#f5b942', TL = '#2dd4bf', OR = '#fb923c', RD = '#f87171';
+  const PAL = [PU, BL, PK, GR, AM, TL];
+  const RANGES = [['24h', 1, '24 hours'], ['7d', 7, '7 days'], ['30d', 30, '30 days'], ['90d', 90, '90 days'], ['1y', 365, '1 year']];
+  const DAY = 864e5, HOUR = 36e5;
+
+  const d = (css, ...k) => h('div', { style: 'position:absolute;' + css }, ...k);
+  const t = (text, css, cls) => h('p', { class: cls || '', style: css, text });
+  const sv = (css, w, hh, inner) => { const e = d(css); e.innerHTML = '<svg width="' + w + '" height="' + hh + '" viewBox="0 0 ' + w + ' ' + hh + '" style="display:block;overflow:visible">' + inner + '</svg>'; return e; };
+  const rgba = (c, a) => { const n = parseInt(c.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; };
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const pad = (n) => String(n).padStart(2, '0');
+  const sqlTime = (ms) => { const x = new Date(ms); return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate()) + ' ' + pad(x.getHours()) + ':' + pad(x.getMinutes()) + ':' + pad(x.getSeconds()); };
+  // shortcut: plugin timestamps are read as server-local time; if the plugin stores UTC the weekday/hour cells shift by the offset.
+  const parseTime = (s) => new Date(String(s).replace(' ', 'T').slice(0, 19)).getTime();
+
+  /** Catmull-Rom spline through points as an SVG cubic path. */
+  function smooth(p) {
+    let s = 'M' + p[0][0] + ' ' + p[0][1];
+    for (let i = 0; i < p.length - 1; i++) {
+      const a = p[i - 1] || p[i], b = p[i], c = p[i + 1], e = p[i + 2] || c;
+      s += 'C' + (b[0] + (c[0] - a[0]) / 6) + ' ' + (b[1] + (c[1] - a[1]) / 6) + ' ' + (c[0] - (e[0] - b[0]) / 6) + ' ' + (c[1] - (e[1] - b[1]) / 6) + ' ' + c[0] + ' ' + c[1];
+    }
+    return s;
+  }
+  const legend = (items, left, top) => d('left:' + left + 'px;top:' + top + 'px;display:flex;gap:21px',
+    ...items.map(([c, l]) => h('span', { class: 'an-lg' }, h('i', { style: 'background:' + c }), l)));
+  const none = (text) => t(text || 'No data', 'left:0;right:0;top:50%;text-align:center', 'an-m10');
+  function panel(x, y, w, hh, title, sub, right) {
+    return h('div', { class: 'an-panel', style: 'left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px' },
+      h('p', { class: 'an-t', text: title }), h('p', { class: 'an-s', text: sub }), h('p', { class: 'an-r', text: right }));
+  }
+  const top = (rows, key, val, n) => {
+    const m = new Map();
+    for (const r of rows) { const k = key(r); if (k) m.set(k, (m.get(k) || 0) + val(r)); }
+    return [...m].sort((a, b) => b[1] - a[1]).slice(0, n);
+  };
+
+  // ---- data ----------------------------------------------------------------------
+  async function sql(q) {
+    const r = await post('user_usage_stats/submit_custom_query', { CustomQueryString: q, ReplaceUserId: false });
+    const cols = (r.colums || r.columns || []).map((c) => String(c).toLowerCase());
+    if (!cols.length && r.message) throw new Error(r.message);
+    return (r.results || []).map((row) => Object.fromEntries(row.map((v, i) => [cols[i], v])));
+  }
+  async function library() {
+    const base = 'Items?Recursive=true&IncludeItemTypes=Movie,Episode&Limit=0&EnableTotalRecordCount=true';
+    const n = (q) => get(base + q).then((r) => r.TotalRecordCount || 0).catch(() => 0);
+    const [r4k, r1080, r720, rsd, hevc, h264, av1, items] = await Promise.all([
+      n('&MinWidth=3200'), n('&MinWidth=1700&MaxWidth=3199'), n('&MinWidth=1100&MaxWidth=1699'), n('&MaxWidth=1099'),
+      n('&VideoCodecs=hevc'), n('&VideoCodecs=h264'), n('&VideoCodecs=av1'),
+      get('Items?Recursive=true&IncludeItemTypes=Movie,Episode&Fields=DateCreated&SortBy=DateCreated&SortOrder=Descending&Limit=30000&EnableImages=false&EnableUserData=false&EnableTotalRecordCount=false')
+        .then((r) => r.Items || []).catch(() => [])]);
+    const res = [r4k, r1080, r720, rsd], total = res.reduce((a, b) => a + b, 0);
+    return { res, codec: [hevc, h264, av1, Math.max(0, total - hevc - h264 - av1)], items };
+  }
+  async function load(days) {
+    const now = Date.now(), hourly = days === 1, step = hourly ? HOUR : DAY, n = hourly ? 24 : days;
+    const mid = new Date(now); mid.setHours(0, 0, 0, 0);
+    const end = hourly ? Math.ceil(now / HOUR) * HOUR : mid.getTime() + DAY, start = end - n * step, prevStart = start - n * step;
+    let rows = [], error = null, users = [];
+    const plugins = await get('Plugins').catch(() => null); // if this lookup fails, try the query anyway
+    const missing = !!plugins && !plugins.some((p) => /playback.?reporting/i.test(p.Name));
+    if (!missing) {
+      try {
+        [rows, users] = await Promise.all([
+          sql("SELECT * FROM PlaybackActivity WHERE DateCreated >= '" + sqlTime(prevStart) + "'"),
+          get('Users').catch(() => [])]);
+        rows = rows.map((r) => ({ ...r, t: parseTime(r.datecreated), secs: Number(r.playduration) || 0 }));
+      } catch (e) { error = e.message; }
+    }
+    return { days, hourly, step, n, start, end, rows, error, missing, users, lib: await library() };
+  }
+
+  // ---- view ----------------------------------------------------------------------
+  function build(D) {
+    const cur = D.rows.filter((r) => r.t >= D.start && r.t < D.end), prev = D.rows.filter((r) => r.t < D.start);
+    const rl = RANGES.find((r) => r[1] === D.days), last = 'Last ' + rl[2];
+    const nm = new Map(D.users.map((u) => [String(u.Id).replace(/-/g, '').toLowerCase(), u.Name]));
+    const userName = (id) => nm.get(String(id).replace(/-/g, '').toLowerCase()) || String(id).slice(0, 8);
+    const bucket = (r) => Math.min(D.n - 1, Math.floor((r.t - D.start) / D.step));
+    const series = (rows, fn) => { const a = Array.from({ length: D.n }, () => []); rows.forEach((r) => a[bucket(r)].push(r)); return a.map(fn); };
+    const method = (r) => { const m = String(r.playbackmethod || '').toLowerCase(); return m.startsWith('transcode') ? 2 : m.includes('directstream') ? 1 : 0; };
+    const hrs = (rows) => rows.reduce((a, r) => a + r.secs, 0) / 3600;
+    const users = (rows) => new Set(rows.map((r) => r.userid)).size;
+    const tcPct = (rows) => rows.length ? rows.filter((r) => method(r) === 2).length / rows.length * 100 : 0;
+    const pctDelta = (a, b) => b > 0 ? (a >= b ? '+' : '') + ((a - b) / b * 100).toFixed(1) + '%' : '-';
+    const out = [];
+    if (D.missing) out.push(d('left:520px;top:20px;width:760px;height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;border:1px solid ' + rgba(AM, .45) + ';border-radius:6px;background:' + rgba(AM, .08) + ';font-size:11px;color:' + AM + ';white-space:nowrap;pointer-events:auto',
+      h('span', { text: '⚠ Playback Reporting plugin is not installed, so playback stats are empty.' }), h('i', { style: 'flex:1' }),
+      h('button', { class: 'an-warn-btn', type: 'button', text: 'Open plugins', onclick: () => window.JA.go('/dashboard/plugins') })));
+
+    // KPI strip
+    out.push(d('left:48px;top:86px;width:1560px;height:1px;background:#1f1f1f'), d('left:48px;top:196px;width:1560px;height:1px;background:#1f1f1f'));
+    const kpis = [
+      ['PLAYS', fmt(cur.length), pctDelta(cur.length, prev.length), cur.length >= prev.length ? GR : RD, series(cur, (a) => a.length), PU],
+      ['WATCH TIME', fmt(hrs(cur)) + ' h', pctDelta(hrs(cur), hrs(prev)), hrs(cur) >= hrs(prev) ? GR : RD, series(cur, hrs), BL],
+      ['ACTIVE USERS', String(users(cur)), (users(cur) >= users(prev) ? '+' : '') + (users(cur) - users(prev)), users(cur) >= users(prev) ? GR : RD, series(cur, users), PK],
+      ['BANDWIDTH', '-', null, null, null, AM],
+      ['TRANSCODES', tcPct(cur).toFixed(1) + '%', (tcPct(cur) >= tcPct(prev) ? '+' : '') + (tcPct(cur) - tcPct(prev)).toFixed(1) + '%', tcPct(cur) <= tcPct(prev) ? GR : AM, series(cur, tcPct), TL],
+      ['FAILED STREAMS', '-', null, null, null, RD]];
+    kpis.forEach(([label, value, delta, dc, ser, color], i) => {
+      const x = 48 + i * 260;
+      if (i) out.push(d('left:' + x + 'px;top:86px;width:1px;height:111px;background:#1f1f1f'));
+      out.push(t(label, 'left:' + x + 'px;top:102px', 'an-kl'), t(value, 'left:' + x + 'px;top:122px', 'an-kv'));
+      if (delta != null) out.push(d('left:' + x + 'px;top:160px;display:flex;gap:10px;white-space:nowrap', h('span', { style: 'font-size:11px;font-weight:500;color:' + dc, text: delta }), h('span', { style: 'font-size:10px;color:#7a7a7a', text: 'vs prev. period' })));
+      if (ser && ser.length > 1) {
+        const mn = Math.min(...ser), mx = Math.max(...ser), sp = ser.map((v, j) => [j * 100 / (ser.length - 1), 1.5 + (1 - (v - mn) / ((mx - mn) || 1)) * 21]);
+        out.push(sv('left:' + (x + 110) + 'px;top:108px', 100, 24, '<path d="' + smooth(sp) + '" stroke="' + color + '" stroke-width="1.5" fill="none"/>'));
+      }
+    });
+
+    // Playback activity
+    const pa = panel(48, 218, 1020, 308, 'Playback activity', 'Plays per day · stacked by media type', last);
+    const kind = (r) => ({ movie: 0, episode: 1, tvchannel: 2, program: 2, livetvchannel: 2 })[String(r.itemtype).toLowerCase()];
+    const lay = [0, 1, 2].map((k) => series(cur, (a) => a.filter((r) => kind(r) === k).length));
+    const cum = [lay[0], lay[0].map((v, i) => v + lay[1][i]), lay[0].map((v, i) => v + lay[1][i] + lay[2][i])];
+    const peak = Math.max(...cum[2], 1), pow = Math.pow(10, Math.floor(Math.log10(peak)));
+    const stepV = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s * 4 >= peak), maxV = stepV * 4;
+    const X = (i) => D.n > 1 ? i * 930 / (D.n - 1) : 465, Y = (v) => 180 - v / maxV * 180;
+    for (let i = 0; i <= 4; i++) {
+      const y = 69 + i * 45;
+      pa.append(d('left:61px;top:' + y + 'px;width:930px;height:1px;background:' + (i === 4 ? '#2a2a2a' : '#1f1f1f')), t(fmt(maxV - i * stepV), 'left:55px;top:' + (y - 6) + 'px;width:34px;text-align:right;transform:translateX(-100%)', 'an-m9'));
+    }
+    const dateLabel = (i) => { const ts = D.start + i * D.step; return D.hourly ? pad(new Date(ts).getHours()) + ':00' : new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+    for (let k = 0; k < 5; k++) { const i = Math.round(k * (D.n - 1) / 4); pa.append(t(dateLabel(i), 'left:' + (51 + X(i)) + 'px;top:259px', 'an-m9')); }
+    pa.append(legend([[PU, 'Movies'], [PK, 'Shows'], [TL, 'Live TV']], 17, 281));
+    if (!cur.length) pa.append(none(D.missing ? 'Playback Reporting not installed' : D.error ? 'Playback Reporting unavailable' : 'No playback in this period'));
+    else {
+      let g = '';
+      [[2, TL, .3], [1, PK, .35], [0, PU, .45]].forEach(([k, c, o], j) => {
+        const pts = cum[k].map((v, i) => [X(i), Y(v)]), line = smooth(pts.length > 1 ? pts : [[0, pts[0][1]], [930, pts[0][1]]]);
+        g += '<defs><linearGradient id="an-g' + j + '" x1="0" y1="0" x2="0" y2="1"><stop stop-color="' + c + '" stop-opacity="' + o + '"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></linearGradient></defs>'
+          + '<path d="' + line + 'L930 180L0 180Z" fill="url(#an-g' + j + ')"/><path d="' + line + '" stroke="' + c + '" stroke-width="2" fill="none"/>';
+      });
+      pa.append(sv('left:61px;top:69px', 930, 180, g));
+      const mark = d('left:0;top:69px;width:0'), tip = d('width:128px;height:40px;top:75px;background:#141414;border:1px solid #2a2a2a;border-radius:6px'), dot = d('width:8px;height:8px;border-radius:50%;background:#fff');
+      const show = (i) => {
+        const x = 61 + X(i);
+        mark.replaceChildren(d('left:0;top:0;width:1px;height:180px;background:#3a3a3a'));
+        mark.style.left = x + 'px'; dot.style.left = x - 4 + 'px'; dot.style.top = 69 + Y(cum[2][i]) - 4 + 'px';
+        tip.style.left = (x + 10 + 128 > 991 ? x - 138 : x + 10) + 'px';
+        tip.replaceChildren(t(dateLabel(i), 'left:9px;top:5px', 'an-m9'), t(fmt(cum[2][i]) + ' plays', 'left:9px;top:19px;font-size:11px;font-weight:700;color:#ededed'));
+      };
+      show(cum[2].indexOf(peak));
+      const hit = d('left:61px;top:69px;width:930px;height:180px');
+      hit.addEventListener('mousemove', (e) => { const r = hit.getBoundingClientRect(); show(Math.max(0, Math.min(D.n - 1, Math.round((e.clientX - r.left) / r.width * (D.n - 1))))); });
+      pa.append(mark, dot, tip, hit);
+    }
+    out.push(pa);
+
+    // Playback method
+    const pm = panel(1092, 218, 516, 308, 'Playback method', 'Direct vs. transcoded', last);
+    const mc = [0, 0, 0]; cur.forEach((r) => mc[method(r)]++);
+    const mt = cur.length || 1, MM = [['Direct Play', GR], ['Direct Stream', BL], ['Transcode', AM]];
+    let ring = '', off = 0;
+    mc.forEach((c, i) => { const len = c / mt * 439.8; if (c) ring += '<circle cx="80" cy="80" r="70" fill="none" stroke="' + MM[i][1] + '" stroke-width="20" stroke-dasharray="' + Math.max(0, len - (cur.length > c ? 3 : 0)) + ' 1000" stroke-dashoffset="' + -off + '" transform="rotate(-90 80 80)"/>'; off += len; });
+    if (!cur.length) ring = '<circle cx="80" cy="80" r="70" fill="none" stroke="#1a1a1a" stroke-width="20"/>';
+    pm.append(sv('left:39px;top:89px', 160, 160, ring),
+      t(cur.length >= 1000 ? (cur.length / 1000).toFixed(1) + 'k' : String(cur.length), 'left:119px;top:151px;width:100px;transform:translateX(-50%);text-align:center;font-size:22px;font-weight:700;letter-spacing:-.5px;color:#ededed'),
+      t('total plays', 'left:119px;top:179px;width:100px;transform:translateX(-50%);text-align:center', 'an-m10'));
+    MM.forEach(([label, c], i) => {
+      const y = 95 + i * 58, p = mc[i] / mt * 100;
+      pm.append(d('left:259px;top:' + (y + 3) + 'px;width:10px;height:10px;border-radius:50%;background:' + c), t(label, 'left:277px;top:' + y + 'px;font-size:12px;font-weight:500;color:#ededed'),
+        t(Math.round(p) + '%', 'right:17px;top:' + y + 'px;font-size:12px;font-weight:700;color:#fff'),
+        d('left:277px;top:' + (y + 24) + 'px;width:220px;height:4px;border-radius:2px;background:#1a1a1a'), d('left:277px;top:' + (y + 24) + 'px;width:' + p * 2.2 + 'px;height:4px;border-radius:2px;background:' + c));
+    });
+    pm.append(t('Transcode reasons are not recorded by Playback Reporting', 'left:17px;top:281px', 'an-m10'));
+    out.push(pm);
+
+    // Bandwidth (no source)
+    const bw = panel(48, 548, 504, 244, 'Bandwidth', 'Mbps · peak vs. average', 'Today');
+    bw.append(none('Bandwidth is not recorded by Jellyfin')); out.push(bw);
+
+    // Heatmap
+    const hm = panel(576, 548, 504, 244, 'Watch time heatmap', 'Hour of day × weekday', 'Avg. hours');
+    const cell = Array.from({ length: 7 }, () => new Array(24).fill(0)), occ = new Array(7).fill(0);
+    cur.forEach((r) => { const x = new Date(r.t); cell[x.getDay()][x.getHours()] += r.secs / 3600; });
+    for (let ts = D.start; ts < D.end; ts += DAY) occ[new Date(ts).getDay()]++;
+    const avg = cell.map((row, wd) => row.map((v) => v / (occ[wd] || 1))), hmax = Math.max(...avg.flat(), 0);
+    const shade = (v) => !v ? '#141414' : v / hmax <= .25 ? '#2b1b55' : v / hmax <= .5 ? '#5b34b0' : v / hmax <= .75 ? '#8b5cf6' : '#c4a6ff';
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((day, r) => {
+      const y = 71 + r * 18.6, wd = (r + 1) % 7;
+      hm.append(t(day, 'left:17px;top:' + (y + 2) + 'px', 'an-m9'));
+      for (let c = 0; c < 24; c++) hm.append(h('div', { title: day + ' ' + pad(c) + ':00 · ' + avg[wd][c].toFixed(1) + ' h', style: 'position:absolute;width:14px;height:14px;border-radius:3px;left:' + (53 + c * 18.6) + 'px;top:' + y + 'px;background:' + shade(avg[wd][c]) }));
+    });
+    [['00', 52], ['06', 163.6], ['12', 275.2], ['18', 386.8], ['23', 479.8]].forEach(([l, x]) => hm.append(t(l, 'left:' + x + 'px;top:207.2px', 'an-m9')));
+    hm.append(t('Less', 'left:379px;top:37px', 'an-m9'), t('More', 'left:475px;top:37px', 'an-m9'));
+    ['#141414', '#2b1b55', '#5b34b0', '#8b5cf6', '#c4a6ff'].forEach((c, i) => hm.append(d('left:' + (403 + i * 14) + 'px;top:37px;width:12px;height:12px;border-radius:2px;background:' + c)));
+    out.push(hm);
+
+    // Top clients
+    const tc = panel(1104, 548, 504, 244, 'Top clients', 'Plays by app', rl[2]);
+    const clients = top(cur, (r) => r.clientname, () => 1, 6);
+    if (!clients.length) tc.append(none());
+    clients.forEach(([name, c], i) => {
+      const y = 65 + i * 28;
+      tc.append(t(name, 'left:17px;top:' + y + 'px', 'an-tx'), d('left:149px;top:' + (y + 2) + 'px;width:260px;height:10px;border-radius:5px;background:#161616'),
+        d('left:149px;top:' + (y + 2) + 'px;width:' + c / clients[0][1] * 260 + 'px;height:10px;border-radius:5px;background:' + PAL[i % 6]), t(fmt(c), 'right:17px;top:' + y + 'px;text-align:right', 'an-v'));
+    });
+    out.push(tc);
+
+    // Top users
+    const tu = panel(48, 816, 372, 188, 'Top users', 'Hours watched', rl[0]);
+    const tusers = top(cur, (r) => r.userid, (r) => r.secs / 3600, 5);
+    if (!tusers.length) tu.append(none());
+    tusers.forEach(([id, v], i) => {
+      const y = 61 + i * 24, name = userName(id);
+      tu.append(h('div', { style: 'position:absolute;left:17px;top:' + y + 'px;width:16px;height:16px;border-radius:50%;background:' + PAL[i % 5] + ';text-align:center;font-size:9px;font-weight:700;line-height:16px;color:#0d0d0d', text: name.charAt(0).toUpperCase() }),
+        t(name, 'left:41px;top:' + (y + 2) + 'px', 'an-tx'), d('left:119px;top:' + (y + 5) + 'px;width:170px;height:6px;border-radius:3px;background:#161616'),
+        d('left:119px;top:' + (y + 5) + 'px;width:' + v / tusers[0][1] * 170 + 'px;height:6px;border-radius:3px;background:' + PAL[i % 5]), t(fmt(v) + 'h', 'right:17px;top:' + (y + 2) + 'px;text-align:right', 'an-v'));
+    });
+    out.push(tu);
+
+    // Library growth
+    const lg = panel(444, 816, 372, 188, 'Library growth', 'New items per month', '');
+    const nowD = new Date(), months = Array.from({ length: 12 }, (_, i) => new Date(nowD.getFullYear(), nowD.getMonth() - 11 + i, 1)), counts = new Array(12).fill(0);
+    D.lib.items.forEach((it) => { const x = new Date(it.DateCreated); const i = (x.getFullYear() - months[0].getFullYear()) * 12 + x.getMonth() - months[0].getMonth(); if (i >= 0 && i < 12) counts[i]++; });
+    const cmax = Math.max(...counts, 1), y0 = months[0].getFullYear(), y1 = months[11].getFullYear();
+    lg.lastChild.textContent = y0 === y1 ? String(y1) : y0 + '–' + String(y1).slice(2);
+    counts.forEach((c, i) => {
+      const bh = c / cmax * 100, x = 20 + i * 28, col = i % 2 ? BL : PU;
+      lg.append(d('left:' + x + 'px;top:' + (159 - bh) + 'px;width:18px;height:' + bh + 'px;border-radius:3px;background:linear-gradient(to bottom,' + col + ',' + rgba(col, .45) + ')', ), t('JFMAMJJASOND'[months[i].getMonth()], 'left:' + (x + 9) + 'px;top:165px;width:18px;text-align:center;transform:translateX(-50%)', 'an-m9'));
+      lg.lastChild.previousSibling.title = months[i].toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ': ' + c;
+    });
+    lg.append(d('left:17px;top:159px;width:336px;height:1px;background:#2a2a2a')); out.push(lg);
+
+    // Resolution & codec
+    const rc = panel(840, 816, 372, 188, 'Resolution & codec', 'Share of library by stream', 'Now');
+    const stackRow = (vals, cols, labels, y) => {
+      const tot = vals.reduce((a, b) => a + b, 0);
+      if (!tot) { rc.append(d('left:17px;top:' + y + 'px;width:334px;height:22px;border-radius:4px;background:#161616')); }
+      let x = 17;
+      vals.forEach((v, i) => {
+        const w = v / (tot || 1) * 328; if (!v) return;
+        rc.append(d('left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:22px;border-radius:4px;background:' + cols[i]));
+        if (w >= 22) rc.append(t(Math.round(v / tot * 100) + '%', 'left:' + (x + 4) + 'px;top:' + (y + 5) + 'px;font-size:10px;font-weight:700;color:#0d0d0d'));
+        x += w + 2;
+      });
+      rc.append(legend(labels.map((l, i) => [cols[i], l]), 17, y + 32));
+    };
+    stackRow(D.lib.res, [PU, BL, GR, AM], ['4K', '1080p', '720p', 'SD'], 61);
+    stackRow(D.lib.codec, [PK, TL, OR, '#6b6b6b'], ['HEVC', 'H.264', 'AV1', 'Other'], 127);
+    out.push(rc);
+
+    // Top content
+    const tn = panel(1236, 816, 372, 188, 'Top content', 'Most played', rl[0]);
+    const content = top(cur, (r) => String(r.itemtype).toLowerCase() === 'episode' ? String(r.itemname).split(' - ')[0] : r.itemname, () => 1, 5);
+    if (!content.length) tn.append(none());
+    content.forEach(([name, c], i) => {
+      const y = 61 + i * 25, col = [BL, PU, GR, PK, AM][i];
+      tn.append(t(String(i + 1), 'left:17px;top:' + y + 'px;font-size:11px;color:#7a7a7a'),
+        d('left:37px;top:' + (y - 2) + 'px;width:22px;height:22px;border-radius:4px;background:linear-gradient(to bottom,' + rgba(col, .9) + ',' + rgba(col, .4) + ')'),
+        t(name, 'left:69px;top:' + (y + 2) + 'px;max-width:190px;overflow:hidden;text-overflow:ellipsis', 'an-tx'), t(fmt(c) + ' plays', 'right:17px;top:' + (y + 2) + 'px;text-align:right', 'an-v'));
+    });
+    out.push(tn);
+    return out;
+  }
+
+  const csv = (rows) => {
+    const cols = Object.keys(rows[0] || {}).filter((k) => k !== 't' && k !== 'secs');
+    return [cols.join(','), ...rows.map((r) => cols.map((c) => '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""') + '"').join(','))].join('\n');
+  };
 
   JA.page({ path: '/dashboard/analytics', title: 'Analytics', render(el) {
-    const root = h('div', { class: 'an-root' });
-    root.innerHTML = HTML.replaceAll('__B__', B);
-    // Range selector: the pill and labels are absolutely placed, so move the active pill and recolour labels.
-    const pill = root.querySelector('[style*="left:1394px"][style*="height:28px"]');
-    const labels = [1321, 1369, 1417, 1465, 1513].map((x) => root.querySelector('p[style*="left:' + x + 'px"][style*="top:33px"]'));
-    const pick = (i) => { pill.style.left = 1394 + (i - 2) * 48 + 'px'; labels.forEach((p, j) => { p.style.color = j === i ? '#0d0d0d' : '#7a7a7a'; }); };
-    labels.forEach((p, i) => root.append(h('button', { class: 'an-range', type: 'button', style: 'left:' + (1298 + i * 48) + 'px', 'aria-label': p.textContent, onclick: () => pick(i) })));
-    el.append(root);
+    const root = h('div', { class: 'an-root' }), sub = t('Playback, bandwidth and library insights across all users and devices', 'left:48px;top:52px;font-size:11px;color:#7a7a7a');
+    const body = d('left:0;top:0;width:100%;height:100%;pointer-events:none'), pill = d('left:1394px;top:26px;width:46px;height:28px;border-radius:4px;background:#ededed');
+    let data = null, days = 30, seq = 0;
+    const labels = RANGES.map(([l], i) => t(l, 'left:' + (1298 + i * 48) + 'px;top:33px;width:46px;text-align:center;font-size:11px;font-weight:500', ''));
+    const mark = () => { pill.style.left = 1298 + RANGES.findIndex((r) => r[1] === days) * 48 + 'px'; labels.forEach((p, i) => { p.style.color = RANGES[i][1] === days ? '#0d0d0d' : '#7a7a7a'; }); };
+    async function go(dd) {
+      days = dd; mark(); const mine = ++seq; body.style.opacity = '.4';
+      const D = await load(dd); if (mine !== seq) return;
+      data = D; body.replaceChildren(...build(D)); body.style.opacity = '';
+      sub.textContent = D.error ? 'Playback Reporting query failed (' + D.error + '), playback panels are empty' : 'Playback, bandwidth and library insights across all users and devices';
+      sub.style.color = D.error ? AM : '#7a7a7a';
+    }
+    root.append(t('Analytics', 'left:48px;top:24px;font-size:20px;font-weight:700;letter-spacing:-.4px;color:#ededed'), sub,
+      d('left:1296px;top:24px;width:244px;height:32px;border:1px solid #1f1f1f;border-radius:6px;background:#000'), pill, ...labels,
+      ...RANGES.map(([, v], i) => h('button', { class: 'an-range', type: 'button', style: 'left:' + (1298 + i * 48) + 'px', 'aria-label': RANGES[i][0], onclick: () => go(v) })),
+      h('button', { class: 'an-export', type: 'button', text: 'Export', onclick: () => {
+        if (!data || !data.rows.length) return toast('Nothing to export', 'error');
+        const a = h('a', { href: URL.createObjectURL(new Blob([csv(data.rows)], { type: 'text/csv' })), download: 'playback-' + days + 'd.csv' }); a.click(); URL.revokeObjectURL(a.href);
+      } }), body);
+    el.append(root); go(days);
   } });
 })();

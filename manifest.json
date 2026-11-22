@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.9.3",
+        "changelog": "Analytics page now shows real data from the Playback Reporting plugin and library counts, with a warning when that plugin is not installed.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.9.3/JellyAdmin_0.3.9.3.zip",
+        "checksum": "ed6f70a8d67a60db6ce5b64079c2ebe0",
+        "timestamp": "2026-11-22T17:30:00Z"
+      },
+      {
         "version": "0.3.9.2",
         "changelog": "Fix Analytics page showing Jellyfin's Page not found: the admin shell now activates for Jelly Admin routes Jellyfin does not know.",
         "targetAbi": "10.11.0.0",
