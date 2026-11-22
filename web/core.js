@@ -193,7 +193,7 @@
     const userName = h('div', { class: 'ja-uname', text: '' });
     const avatar = h('div', { class: 'ja-avatar', text: '' });
     const side = h('aside', { class: 'ja-side' },
-      h('div', { class: 'ja-brand' }, icon('logo-jellyfin', 30), h('div', {}, h('div', { class: 'ja-bname', text: 'jellyfin' }), brandVer)),
+      h('a', { class: 'ja-brand', href: '/', style: 'color:inherit;text-decoration:none' }, icon('logo-jellyfin', 30), h('div', {}, h('div', { class: 'ja-bname', text: 'jellyfin' }), brandVer)),
       navEl, h('div', { class: 'ja-grow' }),
       h('div', { class: 'ja-user' }, avatar, h('div', {}, userName, h('div', { class: 'ja-urole', text: 'Administrator' })), h('i', { class: 'ja-sp' }), icon('more', 14)));
 
@@ -214,7 +214,7 @@
     const top = h('header', { class: 'ja-top' },
       h('button', { class: 'ja-iconbtn', type: 'button', onclick: () => history.back(), 'aria-label': 'Back' }, icon('arrow-left', 14)),
       crumbEl, h('i', { class: 'ja-grow' }),
-      h('div', { class: 'ja-search' }, icon('search', 14), input, h('kbd', { text: '⌘K' }), results),
+      h('div', { class: 'ja-search' }, icon('search', 14), input, h('kbd', {}, h('span', { text: '⌘' }), h('span', { text: 'K' })), results),
       h('button', { class: 'ja-iconbtn', type: 'button', onclick: () => go('/dashboard/activity'), 'aria-label': 'Activity' }, icon('bell', 14)),
       h('div', { class: 'ja-avatar big' }));
     content = h('main', { class: 'ja-content' });

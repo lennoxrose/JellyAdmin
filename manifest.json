@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.8.0",
+        "changelog": "Plugins page: centered status badge, black cog menu. Top bar: black search bar and results, larger spaced shortcut hint, no divider line. Brand logo links back to the main page.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.8.0/JellyAdmin_0.3.8.0.zip",
+        "checksum": "714d04d8dc39639e5857b2fc13dd973a",
+        "timestamp": "2026-11-22T15:15:00Z"
+      },
+      {
         "version": "0.3.7.0",
         "changelog": "Plugins page: cog menu per plugin (settings, install version, enable/disable, uninstall) and install button on catalog entries.",
         "targetAbi": "10.11.0.0",

@@ -5,7 +5,7 @@
 .pb-titles{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .pb-title{font-weight:700;font-size:24px;line-height:35px;letter-spacing:-.48px;color:#fafafa}
 .pb-sub{font-size:12px;line-height:17px;color:#a1a1a1}
-.pb-actions{display:flex;gap:8px}
+.pb-actions{display:flex;gap:8px;align-items:center}
 .pb-btn{display:inline-flex;gap:6px;align-items:center;justify-content:center;height:32px;box-sizing:border-box;padding:0 12px;border:1px solid #2e2e2e;border-radius:6px;background:transparent;color:#fafafa;font:500 12px/17px var(--ja-font);cursor:pointer;white-space:nowrap;flex:none}
 .pb-btn.pri{background:#fafafa;border-color:#fafafa;color:#000}
 .pb-btn[disabled]{opacity:.5;pointer-events:none}
