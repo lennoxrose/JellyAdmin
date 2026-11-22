@@ -245,7 +245,8 @@
   };
   window.addEventListener('resize', applyZoom);
   function sync() {
-    const inDash = document.body.classList.contains('dashboardDocument');
+    // Jellyfin only marks routes it knows as dashboard pages; our own pages (e.g. Analytics) land on its 404 without the class.
+    const inDash = document.body.classList.contains('dashboardDocument') || pages.has(route());
     if (!inDash) { setClass('ja-shell', false); setClass('ja-custom', false); applyZoom(); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
     if (!shell) {
       try { buildShell(); } catch (e) { console.error('JellyAdmin shell failed', e); window.JA.error = e; return; } // leave stock UI untouched on failure

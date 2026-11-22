@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.9.2",
+        "changelog": "Fix Analytics page showing Jellyfin's Page not found: the admin shell now activates for Jelly Admin routes Jellyfin does not know.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.9.2/JellyAdmin_0.3.9.2.zip",
+        "checksum": "af819b7ef1a06e9afd41d0d5d3725a7a",
+        "timestamp": "2026-11-22T16:30:00Z"
+      },
+      {
         "version": "0.3.9.1",
         "changelog": "New Analytics page (from Figma, sample data), redesigned top search bar with new icons, divider under the top bar restored.",
         "targetAbi": "10.11.0.0",
