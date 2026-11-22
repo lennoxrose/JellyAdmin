@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.7.0",
+        "changelog": "Plugins page: cog menu per plugin (settings, install version, enable/disable, uninstall) and install button on catalog entries.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.7.0/JellyAdmin_0.3.7.0.zip",
+        "checksum": "53560462ae40c1eaaf19735f57863422",
+        "timestamp": "2026-11-22T08:00:00Z"
+      },
+      {
         "version": "0.3.6.0",
         "changelog": "User profile pages: checkbox ticks, tab bar; polish.",
         "targetAbi": "10.11.0.0",

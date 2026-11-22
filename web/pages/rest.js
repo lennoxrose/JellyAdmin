@@ -136,21 +136,6 @@
   });
 
   // ---- Plugins / API keys ---------------------------------------------------------------
-  listPage('/dashboard/plugins', 'Plugins', 'Installed extensions and catalog', {
-    load: async () => ({ inst: await get('Plugins'), cat: await get('Packages').catch(() => []) }),
-    actions: () => bt('Restart server', 'restart', false, () => sure('Restart the server?') && tryDo(() => post('System/Restart'), 'Restarting...')),
-    view: ({ inst, cat }, refresh) => {
-      const ids = new Set(inst.map((p) => p.Id.toLowerCase()));
-      return { a: [
-        P.sec('plug', 'Installed', inst.length + ' plugins', inst.map((p) => rowI('plug', p.Name, 'v' + p.Version,
-          h('div', { class: 'pb-actions' }, bd(p.Status, null, p.Status === 'Active' ? 'ok' : 'mute'),
-            p.Status === 'Active' ? bt('Disable', null, false, async () => { if (await tryDo(() => post('Plugins/' + p.Id + '/' + p.Version + '/Disable'), 'Disabled, restart to apply')) refresh(); }) : bt('Enable', null, false, async () => { if (await tryDo(() => post('Plugins/' + p.Id + '/' + p.Version + '/Enable'), 'Enabled, restart to apply')) refresh(); }),
-            p.CanUninstall ? bt('Uninstall', 'trash', false, async () => { if (sure('Uninstall ' + p.Name + '?') && await tryDo(() => del('Plugins/' + p.Id + '/' + p.Version), 'Uninstalled, restart to apply')) refresh(); }) : null)))),
-        P.sec('layers', 'Catalog', 'From your plugin repositories', cat.filter((p) => !ids.has((p.guid || '').toLowerCase())).slice(0, 40).map((p) => rowI('plug', p.name, p.overview || p.description || '',
-          bt('Install', 'plus', false, async () => { if (await tryDo(() => post('Packages/Installed/' + encodeURIComponent(p.name) + '?assemblyGuid=' + p.guid), 'Installing ' + p.name)) refresh(); }))))],
-        rail: [summary('Summary', [['Installed', inst.length], ['Active', inst.filter((p) => p.Status === 'Active').length]])] };
-    }
-  });
   listPage('/dashboard/keys', 'API Keys', 'Tokens for external apps', {
     load: async () => (await get('Auth/Keys')).Items,
     actions: (_, refresh) => bt('New key', 'plus', true, async () => { const n = prompt('App name for this key'); if (n && await tryDo(() => post('Auth/Keys?app=' + encodeURIComponent(n)), 'Key created')) refresh(); }),

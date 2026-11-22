@@ -281,7 +281,7 @@
   const later = () => { clearTimeout(timer); timer = setTimeout(sync, 50); };
   function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; later(); }
 
-  window.JA = { h, icon, browser, device, family, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
+  window.JA = { h, icon, pluginIcon, browser, device, family, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
   const start = () => {
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     later();
