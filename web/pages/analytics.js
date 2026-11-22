@@ -1,6 +1,6 @@
 /* Analytics page (Figma 31:1047), laid out at the design's 1656x1028 content size.
-   Playback figures come from the Playback Reporting plugin (SQL over its PlaybackActivity table); library figures from Items.
-   Bandwidth and failed streams have no data source in Jellyfin, so they show an empty state. */
+   Playback figures come from Jelly Admin's own playback log (Collector.cs, served by JellyAdminApi/Analytics); library figures from Items.
+   Failed streams come from the client's own stop report (FailureTap.cs). */
 (function () {
   const { h, get, post, toast } = window.JA;
   const PU = '#a970ff', BL = '#00a4dc', PK = '#f472b6', GR = '#4ade80', AM = '#f5b942', TL = '#2dd4bf', OR = '#fb923c', RD = '#f87171';
@@ -41,12 +41,6 @@
   };
 
   // ---- data ----------------------------------------------------------------------
-  async function sql(q) {
-    const r = await post('user_usage_stats/submit_custom_query', { CustomQueryString: q, ReplaceUserId: false });
-    const cols = (r.colums || r.columns || []).map((c) => String(c).toLowerCase());
-    if (!cols.length && r.message) throw new Error(r.message);
-    return (r.results || []).map((row) => Object.fromEntries(row.map((v, i) => [cols[i], v])));
-  }
   async function library() {
     const base = 'Items?Recursive=true&IncludeItemTypes=Movie,Episode&Limit=0&EnableTotalRecordCount=true';
     const n = (q) => get(base + q).then((r) => r.TotalRecordCount || 0).catch(() => 0);
@@ -63,46 +57,43 @@
     const mid = new Date(now); mid.setHours(0, 0, 0, 0);
     const end = hourly ? Math.ceil(now / HOUR) * HOUR : mid.getTime() + DAY, start = end - n * step, prevStart = start - n * step;
     let rows = [], error = null, users = [];
-    const plugins = await get('Plugins').catch(() => null); // if this lookup fails, try the query anyway
-    const missing = !!plugins && !plugins.some((p) => /playback.?reporting/i.test(p.Name));
-    if (!missing) {
-      try {
-        [rows, users] = await Promise.all([
-          sql("SELECT * FROM PlaybackActivity WHERE DateCreated >= '" + sqlTime(prevStart) + "'"),
-          get('Users').catch(() => [])]);
-        rows = rows.map((r) => ({ ...r, t: parseTime(r.datecreated), secs: Number(r.playduration) || 0 }));
-      } catch (e) { error = e.message; }
-    }
-    return { days, hourly, step, n, start, end, rows, error, missing, users, lib: await library() };
+    try {
+      [rows, users] = await Promise.all([get('JellyAdminApi/Analytics?since=' + prevStart), get('Users').catch(() => [])]);
+      rows = rows.map((r) => ({ t: r.t, userid: r.u, itemtype: r.k, itemname: r.s || r.n, method: r.m, clientname: r.c, secs: r.secs, kbps: r.kbps, reasons: r.r, failed: !!r.f }));
+    } catch (e) { error = e.message; }
+    return { days, hourly, step, n, start, end, rows, error, users, lib: await library() };
   }
 
   // ---- view ----------------------------------------------------------------------
   function build(D) {
-    const cur = D.rows.filter((r) => r.t >= D.start && r.t < D.end), prev = D.rows.filter((r) => r.t < D.start);
+    const played = D.rows.filter((r) => !r.failed), failed = D.rows.filter((r) => r.failed);
+    const inCur = (r) => r.t >= D.start && r.t < D.end, inPrev = (r) => r.t < D.start;
+    const cur = played.filter(inCur), prev = played.filter(inPrev), curF = failed.filter(inCur), prevF = failed.filter(inPrev);
+    const failPct = (ok, bad) => ok.length + bad.length ? bad.length / (ok.length + bad.length) * 100 : 0;
     const rl = RANGES.find((r) => r[1] === D.days), last = 'Last ' + rl[2];
     const nm = new Map(D.users.map((u) => [String(u.Id).replace(/-/g, '').toLowerCase(), u.Name]));
     const userName = (id) => nm.get(String(id).replace(/-/g, '').toLowerCase()) || String(id).slice(0, 8);
     const bucket = (r) => Math.min(D.n - 1, Math.floor((r.t - D.start) / D.step));
     const series = (rows, fn) => { const a = Array.from({ length: D.n }, () => []); rows.forEach((r) => a[bucket(r)].push(r)); return a.map(fn); };
-    const method = (r) => { const m = String(r.playbackmethod || '').toLowerCase(); return m.startsWith('transcode') ? 2 : m.includes('directstream') ? 1 : 0; };
+    const method = (r) => r.method;
     const hrs = (rows) => rows.reduce((a, r) => a + r.secs, 0) / 3600;
     const users = (rows) => new Set(rows.map((r) => r.userid)).size;
     const tcPct = (rows) => rows.length ? rows.filter((r) => method(r) === 2).length / rows.length * 100 : 0;
     const pctDelta = (a, b) => b > 0 ? (a >= b ? '+' : '') + ((a - b) / b * 100).toFixed(1) + '%' : '-';
     const out = [];
-    if (D.missing) out.push(d('left:520px;top:20px;width:760px;height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;border:1px solid ' + rgba(AM, .45) + ';border-radius:6px;background:' + rgba(AM, .08) + ';font-size:11px;color:' + AM + ';white-space:nowrap;pointer-events:auto',
-      h('span', { text: '⚠ Playback Reporting plugin is not installed, so playback stats are empty.' }), h('i', { style: 'flex:1' }),
-      h('button', { class: 'an-warn-btn', type: 'button', text: 'Open plugins', onclick: () => window.JA.go('/dashboard/plugins') })));
-
+    const bytes = (rows) => rows.reduce((a, r) => a + r.kbps * 125 * r.secs, 0);
+    const fmtBytes = (b) => b >= 1e12 ? (b / 1e12).toFixed(2) + ' TB' : b >= 1e9 ? (b / 1e9).toFixed(1) + ' GB' : b >= 1e6 ? (b / 1e6).toFixed(0) + ' MB' : '-';
     // KPI strip
     out.push(d('left:48px;top:86px;width:1560px;height:1px;background:#1f1f1f'), d('left:48px;top:196px;width:1560px;height:1px;background:#1f1f1f'));
     const kpis = [
       ['PLAYS', fmt(cur.length), pctDelta(cur.length, prev.length), cur.length >= prev.length ? GR : RD, series(cur, (a) => a.length), PU],
       ['WATCH TIME', fmt(hrs(cur)) + ' h', pctDelta(hrs(cur), hrs(prev)), hrs(cur) >= hrs(prev) ? GR : RD, series(cur, hrs), BL],
       ['ACTIVE USERS', String(users(cur)), (users(cur) >= users(prev) ? '+' : '') + (users(cur) - users(prev)), users(cur) >= users(prev) ? GR : RD, series(cur, users), PK],
-      ['BANDWIDTH', '-', null, null, null, AM],
+      ['BANDWIDTH', fmtBytes(bytes(cur)), pctDelta(bytes(cur), bytes(prev)), bytes(cur) <= bytes(prev) ? GR : AM, series(cur, bytes), AM],
       ['TRANSCODES', tcPct(cur).toFixed(1) + '%', (tcPct(cur) >= tcPct(prev) ? '+' : '') + (tcPct(cur) - tcPct(prev)).toFixed(1) + '%', tcPct(cur) <= tcPct(prev) ? GR : AM, series(cur, tcPct), TL],
-      ['FAILED STREAMS', '-', null, null, null, RD]];
+      ['FAILED STREAMS', failPct(cur, curF).toFixed(1) + '%', (failPct(cur, curF) >= failPct(prev, prevF) ? '+' : '') + (failPct(cur, curF) - failPct(prev, prevF)).toFixed(1) + '%',
+        failPct(cur, curF) <= failPct(prev, prevF) ? GR : RD,
+        series([...cur, ...curF], (a) => failPct(a.filter((r) => !r.failed), a.filter((r) => r.failed))), RD]];
     kpis.forEach(([label, value, delta, dc, ser, color], i) => {
       const x = 48 + i * 260 + (i ? 24 : 0); // cells after the first sit 24px right of their divider
       if (i) out.push(d('left:' + (48 + i * 260) + 'px;top:86px;width:1px;height:111px;background:#1f1f1f'));
@@ -116,7 +107,7 @@
 
     // Playback activity
     const pa = panel(48, 218, 1020, 308, 'Playback activity', 'Plays per day · stacked by media type', last);
-    const kind = (r) => ({ movie: 0, episode: 1, tvchannel: 2, program: 2, livetvchannel: 2 })[String(r.itemtype).toLowerCase()];
+    const kind = (r) => ({ movie: 0, episode: 1, tvchannel: 2, program: 2, livetvchannel: 2, livetvprogram: 2 })[String(r.itemtype).toLowerCase()];
     const lay = [0, 1, 2].map((k) => series(cur, (a) => a.filter((r) => kind(r) === k).length));
     const cum = [lay[0], lay[0].map((v, i) => v + lay[1][i]), lay[0].map((v, i) => v + lay[1][i] + lay[2][i])];
     const peak = Math.max(...cum[2], 1), pow = Math.pow(10, Math.floor(Math.log10(peak)));
@@ -129,7 +120,7 @@
     const dateLabel = (i) => { const ts = D.start + i * D.step; return D.hourly ? pad(new Date(ts).getHours()) + ':00' : new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
     for (let k = 0; k < 5; k++) { const i = Math.round(k * (D.n - 1) / 4); pa.append(t(dateLabel(i), 'left:' + (51 + X(i)) + 'px;top:259px', 'an-m9')); }
     pa.append(legend([[PU, 'Movies'], [PK, 'Shows'], [TL, 'Live TV']], 17, 281));
-    if (!cur.length) pa.append(none(D.missing ? 'Playback Reporting not installed' : D.error ? 'Playback Reporting unavailable' : 'No playback in this period'));
+    if (!cur.length) pa.append(none(D.error ? 'Playback data unavailable' : 'No playback in this period'));
     else {
       let g = '';
       [[2, TL, .3], [1, PK, .35], [0, PU, .45]].forEach(([k, c, o], j) => {
@@ -169,17 +160,58 @@
         t(Math.round(p) + '%', 'right:17px;top:' + y + 'px;font-size:12px;font-weight:700;color:#fff'),
         d('left:277px;top:' + (y + 24) + 'px;width:220px;height:4px;border-radius:2px;background:#1a1a1a'), d('left:277px;top:' + (y + 24) + 'px;width:' + p * 2.2 + 'px;height:4px;border-radius:2px;background:' + c));
     });
-    pm.append(t('Transcode reasons are not recorded by Playback Reporting', 'left:17px;top:281px', 'an-m10'));
+    const reasonCount = new Map();
+    cur.filter((r) => method(r) === 2 && r.reasons).forEach((r) => r.reasons.split(',').forEach((x) => {
+      const k = x.trim().replace(/(NotSupported|ExceedsLimit)$/, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+      if (k && k !== 'unknown') reasonCount.set(k, (reasonCount.get(k) || 0) + 1);
+    }));
+    const rsum = [...reasonCount.values()].reduce((a, b) => a + b, 0);
+    pm.append(t(rsum ? 'Transcode reasons: ' + [...reasonCount].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => k + ' (' + Math.round(v / rsum * 100) + '%)').join(', ')
+      : mc[2] ? 'Transcode reasons: none reported' : 'No transcodes in this period', 'left:17px;top:281px', 'an-m10'));
     out.push(pm);
 
-    // Bandwidth (no source)
-    const bw = panel(48, 548, 504, 244, 'Bandwidth', 'Mbps · peak vs. average', 'Today');
-    bw.append(none('Bandwidth is not recorded by Jellyfin')); out.push(bw);
+    // Bandwidth: average concurrent Mbps per hour of day, for the peak day and for the average day
+    const bw = panel(48, 548, 504, 244, 'Bandwidth', 'Mbps · peak vs. average', D.hourly ? 'Today' : rl[2]);
+    const slots = new Map(), nDays = D.hourly ? 1 : D.n;
+    cur.filter((r) => r.kbps > 0).forEach((r) => {
+      for (let ts = r.t, endT = r.t + r.secs * 1000; ts < endT;) {
+        const hb = Math.floor(ts / HOUR) * HOUR, seg = Math.min(endT, hb + HOUR) - ts, key = Math.floor((hb - D.start) / DAY) * 24 + new Date(hb).getHours();
+        slots.set(key, (slots.get(key) || 0) + r.kbps / 1000 * seg / HOUR);
+        ts += seg;
+      }
+    });
+    const peakH = new Array(24).fill(0), avgH = new Array(24).fill(0);
+    slots.forEach((v, key) => { const hr = ((key % 24) + 24) % 24; peakH[hr] = Math.max(peakH[hr], v); avgH[hr] += v / nDays; });
+    const bmax = Math.max(...peakH, 0.001), bpow = Math.pow(10, Math.floor(Math.log10(bmax))), bstep = [1, 2, 2.5, 5, 10].map((m) => m * bpow).find((v) => v * 3 >= bmax), bTop = bstep * 3;
+    for (let i = 0; i <= 3; i++) {
+      const y = 63 + i * 40;
+      bw.append(d('left:55px;top:' + y + 'px;width:420px;height:1px;background:' + (i === 3 ? '#2a2a2a' : '#1f1f1f')),
+        t(String(+(bTop - i * bstep).toFixed(1)), 'left:49px;top:' + (y - 6) + 'px;width:34px;text-align:right;transform:translateX(-100%)', 'an-m9'));
+    }
+    [['00:00', 41], ['06:00', 146], ['12:00', 251], ['18:00', 356], ['24:00', 461]].forEach(([l, x]) => bw.append(t(l, 'left:' + x + 'px;top:191px', 'an-m9')));
+    bw.append(legend([[BL, 'Peak'], [AM, 'Average']], 17, 213));
+    if (!slots.size) bw.append(none('No bandwidth recorded in this period'));
+    else {
+      let g = '';
+      [[peakH, BL, .35], [avgH, AM, .3]].forEach(([vals, c, o], j) => {
+        const pts = vals.map((v, i) => [(i + .5) * 420 / 24, 120 - v / bTop * 120]), line = smooth(pts);
+        g += '<defs><linearGradient id="an-b' + j + '" x1="0" y1="0" x2="0" y2="1"><stop stop-color="' + c + '" stop-opacity="' + o + '"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></linearGradient></defs>'
+          + '<path d="' + line + 'L' + pts[23][0] + ' 120L' + pts[0][0] + ' 120Z" fill="url(#an-b' + j + ')"/><path d="' + line + '" stroke="' + c + '" stroke-width="2" fill="none"/>';
+      });
+      bw.append(sv('left:55px;top:63px', 420, 120, g));
+    }
+    out.push(bw);
 
     // Heatmap
     const hm = panel(576, 548, 504, 244, 'Watch time heatmap', 'Hour of day × weekday', 'Avg. hours');
     const cell = Array.from({ length: 7 }, () => new Array(24).fill(0)), occ = new Array(7).fill(0);
-    cur.forEach((r) => { const x = new Date(r.t); cell[x.getDay()][x.getHours()] += r.secs / 3600; });
+    cur.forEach((r) => { // spread a play over the hours it actually ran
+      for (let ts = r.t, endT = r.t + r.secs * 1000; ts < endT;) {
+        const hb = Math.floor(ts / HOUR) * HOUR, seg = Math.min(endT, hb + HOUR) - ts, x = new Date(hb);
+        cell[x.getDay()][x.getHours()] += seg / HOUR;
+        ts += seg;
+      }
+    });
     for (let ts = D.start; ts < D.end; ts += DAY) occ[new Date(ts).getDay()]++;
     const avg = cell.map((row, wd) => row.map((v) => v / (occ[wd] || 1))), hmax = Math.max(...avg.flat(), 0);
     const shade = (v) => !v ? '#141414' : v / hmax <= .25 ? '#2b1b55' : v / hmax <= .5 ? '#5b34b0' : v / hmax <= .75 ? '#8b5cf6' : '#c4a6ff';
@@ -249,7 +281,7 @@
 
     // Top content
     const tn = panel(1236, 816, 372, 188, 'Top content', 'Most played', rl[0]);
-    const content = top(cur, (r) => String(r.itemtype).toLowerCase() === 'episode' ? String(r.itemname).split(' - ')[0] : r.itemname, () => 1, 5);
+    const content = top(cur, (r) => r.itemname, () => 1, 5);
     if (!content.length) tn.append(none());
     content.forEach(([name, c], i) => {
       const y = 61 + i * 25, col = [BL, PU, GR, PK, AM][i];
@@ -276,8 +308,10 @@
       days = dd; mark(); const mine = ++seq; body.style.opacity = '.4';
       const D = await load(dd); if (mine !== seq) return;
       data = D; body.replaceChildren(...build(D)); body.style.opacity = '';
-      sub.textContent = D.error ? 'Playback Reporting query failed (' + D.error + '), playback panels are empty' : 'Playback, bandwidth and library insights across all users and devices';
-      sub.style.color = D.error ? AM : '#7a7a7a';
+      sub.textContent = D.error ? 'Could not load playback data (' + D.error + ')'
+        : !D.rows.length ? 'No playback recorded yet. Jelly Admin records every playback from the moment this version is installed.'
+        : 'Playback, bandwidth and library insights across all users and devices';
+      sub.style.color = D.error || !D.rows.length ? AM : '#7a7a7a';
     }
     root.append(t('Analytics', 'left:48px;top:24px;font-size:20px;font-weight:700;letter-spacing:-.4px;color:#ededed'), sub,
       d('left:1296px;top:24px;width:244px;height:32px;border:1px solid #1f1f1f;border-radius:6px;background:#000'), pill, ...labels,

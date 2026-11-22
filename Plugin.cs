@@ -35,12 +35,17 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 public class Registrator : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection services, IServerApplicationHost host)
-        => services.AddTransient<IStartupFilter, Filter>();
+    {
+        services.AddTransient<IStartupFilter, Filter>();
+        services.AddSingleton<PlayLog>();
+        services.AddHostedService<Collector>();
+    }
 
     private sealed class Filter : IStartupFilter
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
         {
+            app.UseMiddleware<FailureTap>();
             app.UseMiddleware<CssMiddleware>();
             next(app);
         };
