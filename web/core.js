@@ -196,13 +196,15 @@
     }).catch(() => {});
   }
 
+  // classList.add/toggle fire a mutation even when nothing changes, which would retrigger the observer forever.
+  const setClass = (c, on) => { if (document.body.classList.contains(c) !== on) document.body.classList.toggle(c, on); };
   function sync() {
     const inDash = document.body.classList.contains('dashboardDocument');
-    if (!inDash) { document.body.classList.remove('ja-shell', 'ja-custom'); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
+    if (!inDash) { setClass('ja-shell', false); setClass('ja-custom', false); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
     if (!shell) {
       try { buildShell(); } catch (e) { console.error('JellyAdmin shell failed', e); window.JA.error = e; return; } // leave stock UI untouched on failure
     }
-    document.body.classList.add('ja-shell');
+    setClass('ja-shell', true);
     const key = location.hash;
     if (key === lastKey) return;
     lastKey = key;
@@ -211,7 +213,7 @@
     const all = flatNav().find((n) => n.path === route());
     crumbEl.replaceChildren(h('span', { text: all ? titleCase(all.section) : 'Server' }), icon('chevron-right', 12),
       h('b', { text: page ? page.title : all ? all.label : route().split('/').pop() }));
-    document.body.classList.toggle('ja-custom', !!page);
+    setClass('ja-custom', !!page);
     content.replaceChildren();
     renderNav();
     if (page) {
@@ -222,12 +224,15 @@
   const titleCase = (s) => s.charAt(0) + s.slice(1).toLowerCase();
 
   /** Register a page. def = { path | paths, title, render(el, {query,path}) -> optional cleanup fn } */
-  function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; if (shell) sync(); }
+  // Page scripts load one after another; render once after they have all registered.
+  let timer;
+  const later = () => { clearTimeout(timer); timer = setTimeout(sync, 50); };
+  function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; later(); }
 
   window.JA = { h, icon, browser, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
   const start = () => {
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    sync();
+    later();
   };
   window.addEventListener('hashchange', sync);
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);

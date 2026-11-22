@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script>
+window.ApiClient = { getUrl: (p) => '/' + p.replace(/^\//, ''), accessToken: () => 't', getCurrentUser: () => Promise.resolve({ Name: 'lennox' }), getCurrentUserId: () => 'u', deviceId: () => 'a' };
+</script>
+<script>
+// load the same files the middleware injects, in the same order
+(function(){ var xhr=new XMLHttpRequest(); xhr.open('GET','/pages.json',false); xhr.send(); var f=JSON.parse(xhr.responseText);
+ function css(h){document.write('<link rel="stylesheet" href="/JellyAdmin/'+h+'">');} function js(s){document.write('<script src="/JellyAdmin/'+s+'"><\/script>');}
+ css('style.css'); css('core.css'); f.filter(x=>x.endsWith('.css')).forEach(x=>css('pages/'+x)); js('core.js'); f.filter(x=>x.endsWith('.js')).forEach(x=>js('pages/'+x)); })();
+</script></head>
+<body class="dashboardDocument"><div id="reactRoot"><header class="MuiAppBar-root">stock bar</header><main>stock content</main></div><img src="/slow.gif" width="1" height="1" style="position:fixed;opacity:0"></body></html>
