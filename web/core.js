@@ -192,10 +192,11 @@
     navEl = h('nav', { class: 'ja-navlist' });
     const brandVer = h('div', { class: 'ja-ver', text: '' });
     const userName = h('div', { class: 'ja-uname', text: '' });
+    const verEl = h('div', { class: 'ja-pver' });
     const avatar = h('div', { class: 'ja-avatar', text: '' });
     const side = h('aside', { class: 'ja-side' },
       h('a', { class: 'ja-brand', href: '/', style: 'color:inherit;text-decoration:none' }, icon('logo-jellyfin', 30), h('div', {}, h('div', { class: 'ja-bname', text: 'jellyfin' }), brandVer)),
-      navEl, h('div', { class: 'ja-grow' }),
+      navEl, h('div', { class: 'ja-grow' }), verEl,
       h('div', { class: 'ja-user' }, avatar, h('div', {}, userName, h('div', { class: 'ja-urole', text: 'Administrator' })), h('i', { class: 'ja-sp' }), icon('more', 14)));
 
     crumbEl = h('div', { class: 'ja-crumb' });
@@ -223,6 +224,7 @@
     document.body.append(shell);
 
     // async decoration; failures just leave the placeholders empty
+    get('Plugins').then((l) => { const p = l.find((x) => /jelly ?admin/i.test(x.Name)); if (p) verEl.textContent = 'JellyAdmin: ' + p.Version; }).catch(() => {});
     fetch('/System/Info/Public').then((r) => r.json()).then((i) => { brandVer.textContent = i.Version; }).catch(() => {});
     Promise.resolve(window.ApiClient && ApiClient.getCurrentUser()).then((u) => {
       if (!u) return;

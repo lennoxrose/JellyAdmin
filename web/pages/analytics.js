@@ -156,17 +156,18 @@
           + '<path d="' + line + 'L930 180L0 180Z" fill="url(#an-g' + j + ')"/><path d="' + line + '" stroke="' + c + '" stroke-width="2" fill="none"/>';
       });
       pa.append(sv('left:61px;top:69px', 930, 180, g));
-      const mark = d('left:0;top:69px;width:0'), tip = d('width:128px;height:40px;top:75px;background:#141414;border:1px solid #2a2a2a;border-radius:6px'), dot = d('width:8px;height:8px;border-radius:50%;background:#fff');
+      const off = ';display:none;pointer-events:none', mark = d('left:0;top:69px;width:0' + off), tip = d('width:128px;height:40px;top:75px;background:#141414;border:1px solid #2a2a2a;border-radius:6px' + off), dot = d('width:8px;height:8px;border-radius:50%;background:#fff' + off);
       const show = (i) => {
         const x = 61 + X(i);
         mark.replaceChildren(d('left:0;top:0;width:1px;height:180px;background:#3a3a3a'));
+        [mark, dot, tip].forEach((e) => { e.style.display = 'block'; });
         mark.style.left = x + 'px'; dot.style.left = x - 4 + 'px'; dot.style.top = 69 + Y(cum[2][i]) - 4 + 'px';
         tip.style.left = (x + 10 + 128 > 991 ? x - 138 : x + 10) + 'px';
         tip.replaceChildren(t(dateLabel(i), 'left:9px;top:5px', 'an-m9'), t(fmt(cum[2][i]) + ' plays', 'left:9px;top:19px;font-size:11px;font-weight:700;color:#ededed'));
       };
-      show(cum[2].indexOf(peak));
       const hit = d('left:61px;top:69px;width:930px;height:180px');
       hit.addEventListener('mousemove', (e) => { const r = hit.getBoundingClientRect(); show(Math.max(0, Math.min(D.n - 1, Math.round((e.clientX - r.left) / r.width * (D.n - 1))))); });
+      hit.addEventListener('mouseleave', () => { [mark, dot, tip].forEach((e) => { e.style.display = 'none'; }); });
       pa.append(mark, dot, tip, hit);
     }
     out.push(pa);

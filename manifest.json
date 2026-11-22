@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.4.0.0",
+        "changelog": "Analytics page with built-in playback collection. Playback activity tooltip now only shows on hover. Sidebar shows the installed JellyAdmin version.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.4.0.0/JellyAdmin_0.4.0.0.zip",
+        "checksum": "c95af71423793ab012033ba13cdb654b",
+        "timestamp": "2026-11-22T23:30:00Z"
+      },
+      {
         "version": "0.3.9.7",
         "changelog": "Analytics: show artwork in Top content, real profile pictures in Top users, hover details on the bandwidth chart, tooltips always clear when the pointer leaves.",
         "targetAbi": "10.11.0.0",
