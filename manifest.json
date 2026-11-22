@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.0.0",
+        "changelog": "Full Jelly Admin shell and Figma pages for every admin route; browser logos from jsDelivr.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.0.0/JellyAdmin_0.3.0.0.zip",
+        "checksum": "06fe1e80982dd9a87f6e42c6a3cb1748",
+        "timestamp": "2026-11-22T02:00:00Z"
+      },
+      {
         "version": "0.2.1.0",
         "changelog": "Fix index.html injection on cached loads; add Jelly Admin page to the sidebar plugin section with diagnostics.",
         "targetAbi": "10.11.0.0",

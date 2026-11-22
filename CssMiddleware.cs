@@ -4,26 +4,59 @@ using Microsoft.AspNetCore.Http;
 
 namespace JellyAdmin;
 
-/// <summary>Serves /JellyAdmin/style.css and adds a link to it in the web client's index.html.</summary>
+/// <summary>Serves embedded files under /JellyAdmin/ and links them into the web client's index.html.</summary>
 public class CssMiddleware
 {
-    private const string Link = "<link rel=\"stylesheet\" href=\"/JellyAdmin/style.css\"></head>";
+    private const string Prefix = "/JellyAdmin/";
+    private static readonly Assembly Asm = Assembly.GetExecutingAssembly();
+    // MSBuild writes RecursiveDir with backslashes on Windows, so key by the slash-normalised name.
+    private static readonly Dictionary<string, string> Resources =
+        Asm.GetManifestResourceNames().ToDictionary(n => n.Replace('\\', '/'), n => n, StringComparer.OrdinalIgnoreCase);
+    private static readonly Lazy<string> Tags = new(BuildTags);
     private readonly RequestDelegate _next;
 
     public CssMiddleware(RequestDelegate next) => _next = next;
+
+    // Core first, then every page module. Files dropped into web/pages are picked up automatically.
+    private static string BuildTags()
+    {
+        var names = Resources.Keys.Where(n => n.StartsWith("web/", StringComparison.OrdinalIgnoreCase)).OrderBy(n => n).ToList();
+        var sb = new StringBuilder();
+        foreach (var n in names.Where(n => n == "web/style.css" || n == "web/core.css" || (n.StartsWith("web/pages/") && n.EndsWith(".css"))))
+            sb.Append($"<link rel=\"stylesheet\" href=\"{Prefix}{n[4..]}\">");
+        foreach (var n in names.Where(n => n == "web/core.js"))
+            sb.Append($"<script src=\"{Prefix}{n[4..]}\"></script>");
+        foreach (var n in names.Where(n => n.StartsWith("web/pages/") && n.EndsWith(".js")))
+            sb.Append($"<script src=\"{Prefix}{n[4..]}\"></script>");
+        return sb + "</head>";
+    }
+
+    private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch
+    {
+        ".css" => "text/css",
+        ".js" => "application/javascript",
+        ".svg" => "image/svg+xml",
+        ".png" => "image/png",
+        ".woff2" => "font/woff2",
+        _ => "application/octet-stream"
+    };
 
     public async Task InvokeAsync(HttpContext ctx)
     {
         var path = ctx.Request.Path.Value ?? "";
         var enabled = Plugin.Instance?.Configuration.Enabled ?? false;
 
-        if (enabled && path.Equals("/JellyAdmin/style.css", StringComparison.OrdinalIgnoreCase))
+        if (enabled && path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
         {
-            using var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("JellyAdmin.style.css")!;
-            ctx.Response.ContentType = "text/css";
-            ctx.Response.Headers.CacheControl = "no-cache";
-            await s.CopyToAsync(ctx.Response.Body);
-            return;
+            var name = "web/" + path[Prefix.Length..];
+            if (Resources.TryGetValue(name, out var match))
+            {
+                using var s = Asm.GetManifestResourceStream(match)!;
+                ctx.Response.ContentType = ContentType(name);
+                ctx.Response.Headers.CacheControl = "no-cache";
+                await s.CopyToAsync(ctx.Response.Body);
+                return;
+            }
         }
 
         if (!enabled
@@ -56,7 +89,7 @@ public class CssMiddleware
             return;
         }
 
-        var html = new StreamReader(buffer, Encoding.UTF8).ReadToEnd().Replace("</head>", Link);
+        var html = new StreamReader(buffer, Encoding.UTF8).ReadToEnd().Replace("</head>", Tags.Value);
         var bytes = Encoding.UTF8.GetBytes(html);
         ctx.Response.ContentLength = bytes.Length;
         ctx.Response.Headers.ETag = default;

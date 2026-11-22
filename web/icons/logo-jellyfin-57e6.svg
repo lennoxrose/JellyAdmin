@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo/Jellyfin" clip-path="url(#clip0_0_7)">
+<path id="Vector" d="M48 0.008C35.304 0.008 -5.592 74.148 0.64 86.664C6.88 99.18 89.2 99.04 95.368 86.664C101.536 74.292 60.708 0 48 0V0.008ZM79.04 75.804C75.008 83.916 21.068 84.004 16.984 75.804C12.896 67.6 39.68 19.02 48.012 19.02C56.336 19.02 83.092 67.684 79.048 75.804H79.04ZM48 36.792C43.784 36.792 30.216 61.392 32.28 65.548C34.352 69.708 61.672 69.656 63.72 65.548C65.764 61.44 52.224 36.788 48 36.788V36.792Z" fill-rule="evenodd" clip-rule="evenodd" fill="url(#paint0_linear_0_7)"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_7" x1="12" y1="24" x2="84" y2="80" gradientUnits="userSpaceOnUse">
+<stop stop-color="#AA5CC3"/>
+<stop offset="1" stop-color="#00A4DC"/>
+</linearGradient>
+<clipPath id="clip0_0_7">
+<rect width="96" height="96" fill="white"/>
+</clipPath>
+</defs>
+</svg>
