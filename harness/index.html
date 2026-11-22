@@ -8,4 +8,20 @@ window.ApiClient = { getUrl: (p) => '/' + p.replace(/^\//, ''), accessToken: () 
  function css(h){document.write('<link rel="stylesheet" href="/JellyAdmin/'+h+'">');} function js(s){document.write('<script src="/JellyAdmin/'+s+'"><\/script>');}
  css('style.css'); css('core.css'); f.filter(x=>x.endsWith('.css')).forEach(x=>css('pages/'+x)); js('core.js'); f.filter(x=>x.endsWith('.js')).forEach(x=>js('pages/'+x)); })();
 </script></head>
-<body class="dashboardDocument"><div id="reactRoot"><header class="MuiAppBar-root">stock bar</header><main>stock content</main></div><img src="/slow.gif" width="1" height="1" style="position:fixed;opacity:0"></body></html>
+<body class="dashboardDocument"><div id="reactRoot"><header class="MuiAppBar-root">stock bar</header><main>stock content</main></div><img src="/slow.gif" width="1" height="1" style="position:fixed;opacity:0"><script>
+if (location.search.includes('audit')) {
+  const routes = ['/dashboard','/dashboard/settings','/dashboard/branding','/dashboard/users','/dashboard/libraries','/dashboard/libraries/display','/dashboard/libraries/metadata','/dashboard/libraries/nfo','/dashboard/playback/transcoding','/dashboard/playback/resume','/dashboard/playback/streaming','/dashboard/playback/trickplay','/dashboard/devices','/dashboard/activity','/dashboard/livetv','/dashboard/livetv/recordings','/dashboard/plugins','/dashboard/introskipper','/dashboard/serversync','/dashboard/networking','/dashboard/keys','/dashboard/backups','/dashboard/logs','/dashboard/tasks'];
+  const out = [], errs = [];
+  window.addEventListener('error', (e) => errs.push(e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno));
+  window.addEventListener('unhandledrejection', (e) => errs.push('rejection: ' + (e.reason && e.reason.message)));
+  (async () => {
+    await new Promise((r) => setTimeout(r, 500));
+    for (const r of routes) {
+      errs.length = 0; location.hash = '#' + r; await new Promise((x) => setTimeout(x, 1200));
+      const c = document.querySelector('.ja-content');
+      out.push({ r, custom: document.body.classList.contains('ja-custom'), len: c.innerText.length, err: (c.querySelector('.ja-error') || {}).innerText, errs: errs.slice() });
+    }
+    fetch('/report', { method: 'POST', body: JSON.stringify(out, null, 1) });
+  })();
+}
+</script></body></html>

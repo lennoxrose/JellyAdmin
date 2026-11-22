@@ -1,0 +1,146 @@
+[
+ {
+  "r": "/dashboard",
+  "custom": true,
+  "len": 955,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/settings",
+  "custom": true,
+  "len": 1338,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/branding",
+  "custom": true,
+  "len": 278,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/users",
+  "custom": true,
+  "len": 183,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/libraries",
+  "custom": true,
+  "len": 261,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/libraries/display",
+  "custom": true,
+  "len": 340,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/libraries/metadata",
+  "custom": true,
+  "len": 205,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/libraries/nfo",
+  "custom": true,
+  "len": 321,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/playback/transcoding",
+  "custom": true,
+  "len": 1493,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/playback/resume",
+  "custom": true,
+  "len": 1356,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/playback/streaming",
+  "custom": true,
+  "len": 189,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/playback/trickplay",
+  "custom": true,
+  "len": 305,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/devices",
+  "custom": true,
+  "len": 238,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/activity",
+  "custom": true,
+  "len": 243,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/livetv",
+  "custom": true,
+  "len": 259,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/livetv/recordings",
+  "custom": true,
+  "len": 154,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/plugins",
+  "custom": true,
+  "len": 200,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/introskipper",
+  "custom": true,
+  "len": 859,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/serversync",
+  "custom": true,
+  "len": 111,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/networking",
+  "custom": true,
+  "len": 530,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/keys",
+  "custom": true,
+  "len": 90,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/backups",
+  "custom": true,
+  "len": 103,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/logs",
+  "custom": true,
+  "len": 56,
+  "errs": []
+ },
+ {
+  "r": "/dashboard/tasks",
+  "custom": true,
+  "len": 148,
+  "errs": []
+ }
+]

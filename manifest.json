@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.3.0",
+        "changelog": "Devices page rebuilt from Figma (stats, table, policies, rail); input widths; breadcrumb.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.3.0/JellyAdmin_0.3.3.0.zip",
+        "checksum": "86df114beb4d6ce3c456b0afa67e5761",
+        "timestamp": "2026-11-22T04:10:00Z"
+      },
+      {
         "version": "0.3.2.0",
         "changelog": "Fix infinite loop in the class observer that froze the page; render after all page scripts load; sidebar spacing matched to Figma.",
         "targetAbi": "10.11.0.0",

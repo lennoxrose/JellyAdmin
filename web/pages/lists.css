@@ -1,0 +1,17 @@
+/* Table + stats row for the list pages (Figma devices/activity/etc). */
+.ls-stats{display:flex;border-top:1px solid #1f1f1f;border-bottom:1px solid #1f1f1f;width:100%}
+.ls-stat{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding:16px 20px;box-sizing:border-box;border-left:1px solid #1f1f1f}
+.ls-stat:first-child{border-left:0;padding-left:0}
+.ls-stat-t{display:flex;gap:8px;align-items:center;font-size:11px;line-height:16px;color:#a1a1a1}
+.ls-stat-v{font-weight:700;font-size:24px;line-height:35px;letter-spacing:-.48px;color:#fafafa}
+.ls-stat-s{font-size:10px;line-height:14px;color:#8f8f8f}
+.ls-tbl{display:flex;flex-direction:column;width:100%}
+.ls-th,.ls-tr{display:flex;align-items:center;gap:12px;box-sizing:border-box}
+.ls-th{height:40px;border-bottom:1px solid #1f1f1f;font-size:10px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:#8f8f8f}
+.ls-tr{min-height:64px;border-bottom:1px solid #1f1f1f;font-size:11px;color:#a1a1a1}
+.ls-tr:last-child{border-bottom:0}
+.ls-c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-who{display:flex;gap:12px;align-items:center}.ls-who b{display:block;font-size:12px;font-weight:700;color:#fafafa}.ls-who small{display:block;font-size:10px;color:#8f8f8f}
+.ls-ib{width:32px;height:32px;border:1px solid #1f1f1f;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none}
+.ls-more{margin-left:auto;background:none;border:0;cursor:pointer;color:#8f8f8f;padding:4px}
+.ls-bar{height:3px;background:#1f1f1f;border-radius:2px;overflow:hidden}.ls-bar i{display:block;height:100%;background:#fafafa}

@@ -147,15 +147,6 @@
   });
 
   // ---- Devices / Activity -------------------------------------------------------------
-  listPage('/dashboard/devices', 'Devices', 'Clients that have signed in', {
-    load: async () => (await get('Devices')).Items,
-    actions: (ds, refresh) => bt('Remove all others', 'trash', false, async () => { const me = ApiClient.deviceId(); if (sure('Sign out every other device?')) { await Promise.all(ds.filter((d) => d.Id !== me).map((d) => del('Devices?id=' + d.Id))); refresh(); } }),
-    view: (ds, refresh) => ({
-      a: [P.sec('monitor', 'Devices', ds.length + ' known', ds.length ? ds.map((d) => P.row(d.Name, d.AppName + ' ' + (d.AppVersion || '') + ' · ' + (d.LastUserName || '-') + ' · ' + when(d.DateLastActivity),
-        bt('Remove', 'trash', false, async () => { if (await tryDo(() => del('Devices?id=' + d.Id), 'Removed')) refresh(); }), { py: 11, lead: h('div', { class: 'pb-ib' }, JA.browser(d.Name + ' ' + d.AppName, 18)) })) : empty('No devices', 'monitor'))],
-      rail: [summary('Summary', [['Devices', ds.length], ['Users', new Set(ds.map((d) => d.LastUserName)).size]])]
-    })
-  });
   listPage('/dashboard/activity', 'Activity', 'Recent server events', {
     poll: 10000,
     load: async () => (await get('System/ActivityLog/Entries?startIndex=0&limit=60')).Items,

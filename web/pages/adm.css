@@ -33,7 +33,7 @@
 .adm-stat-top{display:flex;align-items:center;justify-content:space-between;font-size:11px;line-height:16px;color:#a1a1a1}
 .adm-stat-v{font-weight:700;font-size:24px;line-height:35px;letter-spacing:-.48px;color:#fafafa}
 .adm-stat-s{font-size:11px;line-height:16px;color:#8f8f8f}
-.adm-w240{width:240px;flex:none}.adm-selw240{width:240px}.adm-selw200{width:200px}.adm-selw190{width:190px}
+.jx-in.adm-w240,.adm-w240{width:240px;flex:none}.jx-sel.adm-selw240,.jx-selw.adm-selw240{width:240px}.adm-selw240{width:240px}.adm-selw200{width:200px}.adm-selw190{width:190px}
 .adm-ta{width:320px;height:72px;box-sizing:border-box;padding:12px;border:1px solid #1f1f1f;border-radius:6px;background:transparent;color:#fafafa;font:400 12px/17px var(--ja-font);resize:none;outline:0;flex:none}
 .adm-ta:focus{border-color:#8f8f8f}
 .adm-code{width:100%;min-height:236px;box-sizing:border-box;padding:14px;border:1px solid #1f1f1f;border-radius:6px;background:transparent;color:#fafafa;font:400 11px/19px var(--ja-font);resize:vertical;outline:0;tab-size:2}

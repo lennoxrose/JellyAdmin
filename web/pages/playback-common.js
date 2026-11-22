@@ -64,7 +64,8 @@
         onDestroy: (f) => cleanups.push(f),
         reload: load
       };
-      const v = s.view(data, ui);
+      let v;
+      try { v = s.view(data, ui); } catch (e) { root.replaceChildren(h('pre', { class: 'ja-error', text: 'Page failed to render: ' + e.message })); console.error(e); return; }
       const save = btn('Save changes', 'save', true, async () => {
         save.disabled = true;
         try { await s.save(data); toast('Saved'); await load(); }
@@ -72,9 +73,9 @@
       });
       root.replaceChildren(
         h('div', { class: 'pb-head' }, h('div', { class: 'pb-titles' }, P('pb-title', s.title), P('pb-sub', s.sub)),
-          h('div', { class: 'pb-actions' }, btn('Reset', 'restart', false, load), save)),
+          h('div', { class: 'pb-actions' }, s.actions ? s.actions(ui) : [btn('Reset', 'restart', false, load), save])),
         h('div', { class: 'pb-cols' },
-          h('div', { class: 'pb-main' }, h('div', { class: 'pb-col' }, v.a), h('div', { class: 'pb-col' }, v.b)),
+          h('div', { class: 'pb-main' }, h('div', { class: 'pb-col' }, v.a), v.b && v.b.length ? h('div', { class: 'pb-col' }, v.b) : null),
           h('div', { class: 'pb-rail' }, v.rail)));
     }
     load();

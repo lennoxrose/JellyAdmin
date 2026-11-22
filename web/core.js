@@ -211,7 +211,7 @@
     if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
     const page = pages.get(route());
     const all = flatNav().find((n) => n.path === route());
-    crumbEl.replaceChildren(h('span', { text: all ? titleCase(all.section) : 'Server' }), icon('chevron-right', 12),
+    crumbEl.replaceChildren(h('span', { text: 'Server' }), icon('chevron-right', 12),
       h('b', { text: page ? page.title : all ? all.label : route().split('/').pop() }));
     setClass('ja-custom', !!page);
     content.replaceChildren();

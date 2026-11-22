@@ -13,11 +13,15 @@ const api = {
   ScheduledTasks: [{ Id: 't', Name: 'Scan Media Library', Category: 'Library', State: 'Idle', Triggers: [], LastExecutionResult: { Status: 'Completed', EndTimeUtc: T(3) } }],
   Users: [{ Id: 'u', Name: 'lennox', LastActivityDate: T(0.1), Policy: { IsAdministrator: true } }],
   'System/ActivityLog/Entries': { Items: [{ Name: 'lennox is online from Firefox', ShortOverview: 'IP: 10.42.4.54', Date: T(0.1), Severity: 'Information' }, { Name: 'lennox disconnected from Firefox', Date: T(0.2), Severity: 'Information' }] },
-  'web/ConfigurationPages': []
+  'web/ConfigurationPages': [], Sessions: [{ DeviceId: 'a', RemoteEndPoint: '10.42.4.54', UserName: 'lennox' }], 'Localization/Options': [{ Name: 'English', Value: 'en-US' }], 'Users/u/Items/Resume': { Items: [], TotalRecordCount: 0 },
+  'System/Configuration': {}, 'System/Configuration/network': {}, 'System/Configuration/xbmcmetadata': {}, 'System/Configuration/livetv': { TunerHosts: [], ListingProviders: [] },
+  'Branding/Configuration': {}, Packages: [], 'Auth/Keys': { Items: [] }, Backup: [], 'System/Logs': [], 'LiveTv/Timers': { Items: [] }, 'LiveTv/SeriesTimers': { Items: [] },
+  'Localization/Cultures': [{ TwoLetterISOLanguageName: 'en', DisplayName: 'English' }], 'Localization/Countries': [{ TwoLetterISORegionName: 'US', DisplayName: 'United States' }]
 };
 http.createServer((q, r) => {
   const u = new URL(q.url, 'http://x'), p = decodeURIComponent(u.pathname).replace(/^\//, '');
   if (p === '' || p === 'index.html') { r.setHeader('content-type', 'text/html'); return r.end(fs.readFileSync(path.join(__dirname, 'index.html'))); }
+  if (p === 'report') { let b=''; q.on('data',c=>b+=c); q.on('end',()=>{ fs.writeFileSync(path.join(__dirname,'audit.json'), b); r.end('ok'); }); return; }
   if (p === 'slow.gif') return setTimeout(() => { r.setHeader('content-type', 'image/gif'); r.end(Buffer.from('R0lGODlhAQABAAAAACw=', 'base64')); }, 2500);
   if (p.startsWith('JellyAdmin/')) { const f = path.join(root, p.slice(11)); if (fs.existsSync(f)) { r.setHeader('content-type', { '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' }[path.extname(f)] || 'text/plain'); return r.end(fs.readFileSync(f)); } }
   if (p === 'pages.json') { r.setHeader('content-type', 'application/json'); return r.end(JSON.stringify(fs.readdirSync(path.join(root, 'pages')).filter((f) => /\.(js|css)$/.test(f)))); }
