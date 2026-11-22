@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.9.7",
+        "changelog": "Analytics: show artwork in Top content, real profile pictures in Top users, hover details on the bandwidth chart, tooltips always clear when the pointer leaves.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.9.7/JellyAdmin_0.3.9.7.zip",
+        "checksum": "145ce63630e95f2eefcadc609b1fc4fe",
+        "timestamp": "2026-11-22T22:30:00Z"
+      },
+      {
         "version": "0.3.9.6",
         "changelog": "Analytics: running plays show live and the page refreshes itself, graph lines no longer dip below the data, hover details on the heatmap and library growth.",
         "targetAbi": "10.11.0.0",

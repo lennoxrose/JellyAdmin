@@ -35,6 +35,7 @@
   function tooltip(pane) {
     const tip = d('display:none;padding:6px 9px;background:#141414;border:1px solid #2a2a2a;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:5');
     pane.append(tip);
+    pane.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
     return {
       show(x, y, title, value) {
         tip.replaceChildren(h('div', { class: 'an-m9', text: title }), h('div', { style: 'font-size:11px;font-weight:700;color:#ededed;margin-top:3px', text: value }));
@@ -45,6 +46,13 @@
       },
       hide() { tip.style.display = 'none'; }
     };
+  }
+  const artIds = new Map(); // played item id -> id whose picture to show
+  /** Draw an item's picture into a thumbnail; the gradient behind it stays if the item has none. */
+  function paint(thumb, artId) {
+    if (!window.ApiClient) return;
+    const img = h('img', { alt: '', src: ApiClient.getUrl('Items/' + artId + '/Images/Primary?fillWidth=44&fillHeight=44&quality=85'), style: 'width:100%;height:100%;object-fit:cover;display:block' });
+    img.addEventListener('load', () => thumb.replaceChildren(img));
   }
   const none = (text) => t(text || 'No data', 'left:0;right:0;top:50%;text-align:center', 'an-m10');
   function panel(x, y, w, hh, title, sub, right) {
@@ -77,7 +85,7 @@
     let rows = [], error = null, users = [];
     try {
       [rows, users] = await Promise.all([get('JellyAdminApi/Analytics?since=' + prevStart), get('Users').catch(() => [])]);
-      rows = rows.map((r) => ({ t: r.t, userid: r.u, itemtype: r.k, itemname: r.s || r.n, method: r.m, clientname: r.c, secs: r.secs, kbps: r.kbps, reasons: r.r, failed: !!r.f }));
+      rows = rows.map((r) => ({ t: r.t, userid: r.u, itemtype: r.k, itemname: r.s || r.n, itemid: r.i, method: r.m, clientname: r.c, secs: r.secs, kbps: r.kbps, reasons: r.r, failed: !!r.f }));
     } catch (e) { error = e.message; }
     return { days, hourly, step, n, start, end, rows, error, users, lib: libCache && Date.now() - libAt < 3e5 ? libCache : (libAt = Date.now(), libCache = await library()) };
   }
@@ -89,8 +97,9 @@
     const cur = played.filter(inCur), prev = played.filter(inPrev), curF = failed.filter(inCur), prevF = failed.filter(inPrev);
     const failPct = (ok, bad) => ok.length + bad.length ? bad.length / (ok.length + bad.length) * 100 : 0;
     const rl = RANGES.find((r) => r[1] === D.days), last = 'Last ' + rl[2];
-    const nm = new Map(D.users.map((u) => [String(u.Id).replace(/-/g, '').toLowerCase(), u.Name]));
-    const userName = (id) => nm.get(String(id).replace(/-/g, '').toLowerCase()) || String(id).slice(0, 8);
+    const normId = (id) => String(id).replace(/-/g, '').toLowerCase();
+    const um = new Map(D.users.map((u) => [normId(u.Id), u]));
+    const userOf = (id) => um.get(normId(id));
     const bucket = (r) => Math.min(D.n - 1, Math.floor((r.t - D.start) / D.step));
     const series = (rows, fn) => { const a = Array.from({ length: D.n }, () => []); rows.forEach((r) => a[bucket(r)].push(r)); return a.map(fn); };
     const method = (r) => r.method;
@@ -217,6 +226,18 @@
           + '<path d="' + line + 'L' + pts[23][0] + ' 120L' + pts[0][0] + ' 120Z" fill="url(#an-b' + j + ')"/><path d="' + line + '" stroke="' + c + '" stroke-width="2" fill="none"/>';
       });
       bw.append(sv('left:55px;top:63px', 420, 120, g));
+      const bTip = tooltip(bw), shown = 'display:none;pointer-events:none';
+      const bMark = d('top:63px;width:1px;height:120px;background:#3a3a3a;' + shown), dotP = d('width:8px;height:8px;border-radius:50%;background:' + BL + ';' + shown), dotA = d('width:8px;height:8px;border-radius:50%;background:' + AM + ';' + shown);
+      const bHit = d('left:55px;top:63px;width:420px;height:120px');
+      const bHide = () => { bTip.hide(); [bMark, dotP, dotA].forEach((e) => { e.style.display = 'none'; }); };
+      bHit.addEventListener('mousemove', (e) => {
+        const r = bHit.getBoundingClientRect(), hr = Math.max(0, Math.min(23, Math.floor((e.clientX - r.left) / r.width * 24))), x = 55 + (hr + .5) * 420 / 24;
+        bMark.style.cssText += ';display:block;left:' + x + 'px';
+        [[dotP, peakH[hr]], [dotA, avgH[hr]]].forEach(([dot, v]) => { dot.style.display = 'block'; dot.style.left = x - 4 + 'px'; dot.style.top = 63 + 120 - v / bTop * 120 - 4 + 'px'; });
+        bTip.show(x, 68, pad(hr) + ':00-' + pad((hr + 1) % 24) + ':00', peakH[hr].toFixed(1) + ' Mbps peak · ' + avgH[hr].toFixed(1) + ' avg');
+      });
+      bHit.addEventListener('mouseleave', bHide);
+      bw.append(bMark, dotP, dotA, bHit);
     }
     out.push(bw);
 
@@ -267,9 +288,10 @@
     const tusers = top(cur, (r) => r.userid, (r) => r.secs / 3600, 5);
     if (!tusers.length) tu.append(none());
     tusers.forEach(([id, v], i) => {
-      const y = 61 + i * 24, name = userName(id);
-      tu.append(h('div', { style: 'position:absolute;left:17px;top:' + y + 'px;width:16px;height:16px;border-radius:50%;background:' + PAL[i % 5] + ';text-align:center;font-size:9px;font-weight:700;line-height:16px;color:#0d0d0d', text: name.charAt(0).toUpperCase() }),
-        t(name, 'left:41px;top:' + (y + 2) + 'px', 'an-tx'), d('left:119px;top:' + (y + 5) + 'px;width:170px;height:6px;border-radius:3px;background:#161616'),
+      const y = 61 + i * 24, u = userOf(id), name = u ? u.Name : String(id).slice(0, 8);
+      const av = h('div', { class: 'an-av', style: 'left:17px;top:' + y + 'px;background:' + PAL[i % 5] });
+      window.JA.avatarFill(av, u || { Name: name });
+      tu.append(av, t(name, 'left:41px;top:' + (y + 2) + 'px', 'an-tx'), d('left:119px;top:' + (y + 5) + 'px;width:170px;height:6px;border-radius:3px;background:#161616'),
         d('left:119px;top:' + (y + 5) + 'px;width:' + v / tusers[0][1] * 170 + 'px;height:6px;border-radius:3px;background:' + PAL[i % 5]), t(fmt(v) + 'h', 'right:17px;top:' + (y + 2) + 'px;text-align:right', 'an-v'));
     });
     out.push(tu);
@@ -317,14 +339,24 @@
 
     // Top content
     const tn = panel(1236, 816, 372, 188, 'Top content', 'Most played', rl[0]);
-    const content = top(cur, (r) => r.itemname, () => 1, 5);
+    const content = top(cur, (r) => r.itemname, () => 1, 5), anyId = new Map();
+    cur.forEach((r) => { if (!anyId.has(r.itemname)) anyId.set(r.itemname, r.itemid); });
     if (!content.length) tn.append(none());
+    const pending = [];
     content.forEach(([name, c], i) => {
-      const y = 61 + i * 25, col = [BL, PU, GR, PK, AM][i];
-      tn.append(t(String(i + 1), 'left:17px;top:' + y + 'px;font-size:11px;color:#7a7a7a'),
-        d('left:37px;top:' + (y - 2) + 'px;width:22px;height:22px;border-radius:4px;background:linear-gradient(to bottom,' + rgba(col, .9) + ',' + rgba(col, .4) + ')'),
+      const y = 61 + i * 25, col = [BL, PU, GR, PK, AM][i], itemId = anyId.get(name);
+      const thumb = d('left:37px;top:' + (y - 2) + 'px;width:22px;height:22px;border-radius:4px;overflow:hidden;background:linear-gradient(to bottom,' + rgba(col, .9) + ',' + rgba(col, .4) + ')');
+      if (artIds.has(itemId)) paint(thumb, artIds.get(itemId)); else if (itemId) pending.push([thumb, itemId]);
+      tn.append(t(String(i + 1), 'left:17px;top:' + y + 'px;font-size:11px;color:#7a7a7a'), thumb,
         t(name, 'left:69px;top:' + (y + 2) + 'px;max-width:190px;overflow:hidden;text-overflow:ellipsis', 'an-tx'), t(fmt(c) + ' plays', 'right:17px;top:' + (y + 2) + 'px;text-align:right', 'an-v'));
     });
+    if (pending.length) {
+      // Episodes show their series' poster, so look up the series id once for the titles on screen.
+      get('Items?Ids=' + pending.map((x) => x[1]).join(',')).then((res) => {
+        const by = new Map((res.Items || []).map((it) => [normId(it.Id), it.SeriesId || it.Id]));
+        pending.forEach(([thumb, id]) => { const art = by.get(normId(id)) || id; artIds.set(id, art); paint(thumb, art); });
+      }).catch(() => {});
+    }
     out.push(tn);
     return out;
   }
@@ -341,6 +373,7 @@
     const labels = RANGES.map(([l], i) => t(l, 'left:' + (1298 + i * 48) + 'px;top:33px;width:46px;text-align:center;font-size:11px;font-weight:500', ''));
     const mark = () => { pill.style.left = 1298 + RANGES.findIndex((r) => r[1] === days) * 48 + 'px'; labels.forEach((p, i) => { p.style.color = RANGES[i][1] === days ? '#0d0d0d' : '#7a7a7a'; }); };
     async function go(dd, quiet) {
+      if (quiet && body.querySelector('.an-panel:hover')) return; // keep a hovered tooltip on screen
       days = dd; mark(); const mine = ++seq; if (!quiet) body.style.opacity = '.4';
       const D = await load(dd); if (mine !== seq) return;
       data = D; body.replaceChildren(...build(D)); body.style.opacity = '';
