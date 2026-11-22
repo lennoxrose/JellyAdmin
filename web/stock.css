@@ -1,0 +1,71 @@
+/* Dark Figma styling for stock Jellyfin admin pages that have no custom page (user profile, library editor, plugin config pages...).
+   Covers both MUI components and the classic emby-* elements. Only active inside the new shell. */
+body.ja-shell:not(.ja-custom){--ja-bg:#000;--ja-raised:#0d0d0d;--ja-border:#1f1f1f;--ja-strong:#2e2e2e;--ja-text:#fafafa;--ja-text2:#a1a1a1;--ja-muted:#8f8f8f}
+body.ja-shell:not(.ja-custom) .content-primary,body.ja-shell:not(.ja-custom) .page,body.ja-shell:not(.ja-custom) .mainAnimatedPage,body.ja-shell:not(.ja-custom) .padded-left,body.ja-shell:not(.ja-custom) .padded-right{background:transparent!important;color:var(--ja-text);font-family:var(--ja-font)}
+body.ja-shell:not(.ja-custom) .content-primary,body.ja-shell:not(.ja-custom) .padded-left{max-width:1100px}
+body.ja-shell:not(.ja-custom) .padded-left{padding-left:48px!important}
+body.ja-shell:not(.ja-custom) .padded-right{padding-right:48px!important}
+body.ja-shell:not(.ja-custom) .content-primary{padding:24px 48px 64px;box-sizing:border-box}
+/* headings and text */
+body.ja-shell:not(.ja-custom) h1,body.ja-shell:not(.ja-custom) h2,body.ja-shell:not(.ja-custom) h3,body.ja-shell:not(.ja-custom) .MuiTypography-h1,body.ja-shell:not(.ja-custom) .MuiTypography-h2,body.ja-shell:not(.ja-custom) .MuiTypography-h3,body.ja-shell:not(.ja-custom) .MuiTypography-h4,body.ja-shell:not(.ja-custom) .sectionTitle{font-family:var(--ja-font);color:var(--ja-text);font-weight:700;letter-spacing:-.02em}
+body.ja-shell:not(.ja-custom) h2,body.ja-shell:not(.ja-custom) .sectionTitle{font-size:20px;line-height:28px}
+body.ja-shell:not(.ja-custom) h3{font-size:14px}
+body.ja-shell:not(.ja-custom) .fieldDescription,body.ja-shell:not(.ja-custom) .MuiFormHelperText-root,body.ja-shell:not(.ja-custom) .listItemBodyText.secondary,body.ja-shell:not(.ja-custom) .secondary{color:var(--ja-muted)!important;font-size:11px;line-height:16px}
+body.ja-shell:not(.ja-custom) .MuiTypography-root,body.ja-shell:not(.ja-custom) p,body.ja-shell:not(.ja-custom) label,body.ja-shell:not(.ja-custom) .inputLabel,body.ja-shell:not(.ja-custom) .MuiFormLabel-root{font-family:var(--ja-font);color:var(--ja-text);font-size:12px}
+body.ja-shell:not(.ja-custom) a{color:var(--ja-text)}
+/* surfaces */
+body.ja-shell:not(.ja-custom) .MuiPaper-root,body.ja-shell:not(.ja-custom) .MuiCard-root,body.ja-shell:not(.ja-custom) .cardBox,body.ja-shell:not(.ja-custom) .paperList,body.ja-shell:not(.ja-custom) .detailSection,body.ja-shell:not(.ja-custom) .MuiDialog-paper,body.ja-shell:not(.ja-custom) .dialog,body.ja-shell:not(.ja-custom) .formDialogContent{background:var(--ja-bg)!important;background-image:none!important;border:1px solid var(--ja-border);border-radius:10px;box-shadow:none!important;color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .paperList{padding:0}
+body.ja-shell:not(.ja-custom) .listItem,body.ja-shell:not(.ja-custom) .MuiListItem-root,body.ja-shell:not(.ja-custom) .MuiListItemButton-root{border-bottom:1px solid var(--ja-border);color:var(--ja-text);border-radius:0}
+body.ja-shell:not(.ja-custom) .listItem:last-child{border-bottom:0}
+body.ja-shell:not(.ja-custom) .listItem:hover,body.ja-shell:not(.ja-custom) .MuiListItemButton-root:hover{background:var(--ja-raised)}
+body.ja-shell:not(.ja-custom) .listItemBodyText{color:var(--ja-text);font-size:12px}
+body.ja-shell:not(.ja-custom) .MuiDivider-root,body.ja-shell:not(.ja-custom) hr{border-color:var(--ja-border)}
+/* inputs */
+body.ja-shell:not(.ja-custom) .emby-input,body.ja-shell:not(.ja-custom) .emby-select,body.ja-shell:not(.ja-custom) .emby-textarea,body.ja-shell:not(.ja-custom) .MuiInputBase-root,body.ja-shell:not(.ja-custom) .MuiOutlinedInput-root,body.ja-shell:not(.ja-custom) input[type=text],body.ja-shell:not(.ja-custom) input[type=password],body.ja-shell:not(.ja-custom) input[type=number],body.ja-shell:not(.ja-custom) input[type=email],body.ja-shell:not(.ja-custom) select,body.ja-shell:not(.ja-custom) textarea{background:var(--ja-raised)!important;color:var(--ja-text)!important;border:1px solid var(--ja-border)!important;border-radius:6px!important;font:12px var(--ja-font)!important;box-shadow:none!important}
+body.ja-shell:not(.ja-custom) .MuiOutlinedInput-notchedOutline{border:0!important}
+body.ja-shell:not(.ja-custom) .MuiInputBase-input{color:var(--ja-text);font:12px var(--ja-font)}
+body.ja-shell:not(.ja-custom) .MuiInputBase-root input,body.ja-shell:not(.ja-custom) .MuiInputBase-root textarea{border:0!important;background:transparent!important}
+body.ja-shell:not(.ja-custom) .emby-input:focus,body.ja-shell:not(.ja-custom) .emby-select:focus,body.ja-shell:not(.ja-custom) .emby-textarea:focus,body.ja-shell:not(.ja-custom) .Mui-focused{border-color:var(--ja-muted)!important}
+body.ja-shell:not(.ja-custom) .emby-input,body.ja-shell:not(.ja-custom) .emby-select{height:34px;padding:0 12px}
+body.ja-shell:not(.ja-custom) .emby-select option,body.ja-shell:not(.ja-custom) select option{background:var(--ja-raised);color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .inputContainer,body.ja-shell:not(.ja-custom) .selectContainer,body.ja-shell:not(.ja-custom) .checkboxContainer{margin-bottom:16px}
+body.ja-shell:not(.ja-custom) .emby-input-selectionbar,body.ja-shell:not(.ja-custom) .selectArrowContainer,body.ja-shell:not(.ja-custom) .selectLabel,body.ja-shell:not(.ja-custom) .inputLabel{color:var(--ja-text2)!important;font-size:11px}
+/* checkboxes + switches */
+body.ja-shell:not(.ja-custom) .emby-checkbox+span::before,body.ja-shell:not(.ja-custom) .emby-checkbox-label .checkboxIcon{border:1px solid var(--ja-strong)!important;background:var(--ja-raised)!important;border-radius:4px}
+body.ja-shell:not(.ja-custom) .emby-checkbox:checked+span::before{background:var(--ja-text)!important;border-color:var(--ja-text)!important}
+body.ja-shell:not(.ja-custom) .emby-checkbox:checked+span+span::after,body.ja-shell:not(.ja-custom) .checkboxIcon-checked{color:#000!important}
+body.ja-shell:not(.ja-custom) .MuiCheckbox-root,body.ja-shell:not(.ja-custom) .MuiRadio-root{color:var(--ja-muted)}
+body.ja-shell:not(.ja-custom) .MuiCheckbox-root.Mui-checked,body.ja-shell:not(.ja-custom) .MuiRadio-root.Mui-checked{color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .MuiSwitch-track{background:var(--ja-strong)!important;opacity:1}
+body.ja-shell:not(.ja-custom) .MuiSwitch-thumb{background:var(--ja-text2)}
+body.ja-shell:not(.ja-custom) .Mui-checked+.MuiSwitch-track{background:var(--ja-text)!important}
+body.ja-shell:not(.ja-custom) .Mui-checked .MuiSwitch-thumb{background:#000}
+/* buttons */
+body.ja-shell:not(.ja-custom) .emby-button.raised,body.ja-shell:not(.ja-custom) button.raised,body.ja-shell:not(.ja-custom) .MuiButton-outlined,body.ja-shell:not(.ja-custom) .MuiButton-text{background:transparent!important;color:var(--ja-text)!important;border:1px solid var(--ja-strong)!important;border-radius:6px!important;font:500 12px var(--ja-font)!important;text-transform:none!important;box-shadow:none!important;height:32px;padding:0 12px}
+body.ja-shell:not(.ja-custom) .button-submit,body.ja-shell:not(.ja-custom) .MuiButton-contained,body.ja-shell:not(.ja-custom) .raised.button-submit{background:var(--ja-text)!important;color:#000!important;border-color:var(--ja-text)!important;border-radius:6px!important;font:500 12px var(--ja-font)!important;text-transform:none!important;box-shadow:none!important}
+body.ja-shell:not(.ja-custom) .button-destructive,body.ja-shell:not(.ja-custom) .MuiButton-colorError{color:var(--ja-danger)!important;border-color:var(--ja-danger)!important}
+body.ja-shell:not(.ja-custom) .emby-button.raised:hover,body.ja-shell:not(.ja-custom) .MuiButton-outlined:hover{background:var(--ja-raised)!important}
+body.ja-shell:not(.ja-custom) .paper-icon-button-light,body.ja-shell:not(.ja-custom) .MuiIconButton-root{color:var(--ja-text2)}
+/* tabs */
+body.ja-shell:not(.ja-custom) .MuiTabs-root,body.ja-shell:not(.ja-custom) .emby-tabs-slider{border-bottom:1px solid var(--ja-border)}
+body.ja-shell:not(.ja-custom) .MuiTab-root,body.ja-shell:not(.ja-custom) .emby-tab-button{font:500 12px var(--ja-font)!important;text-transform:none;color:var(--ja-text2)}
+body.ja-shell:not(.ja-custom) .Mui-selected,body.ja-shell:not(.ja-custom) .emby-tab-button-active{color:var(--ja-text)!important}
+body.ja-shell:not(.ja-custom) .MuiTabs-indicator{background:var(--ja-text)}
+/* tables */
+body.ja-shell:not(.ja-custom) .MuiTableCell-root{border-bottom:1px solid var(--ja-border);color:var(--ja-text);font:12px var(--ja-font)}
+body.ja-shell:not(.ja-custom) .MuiTableCell-head{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--ja-muted)}
+body.ja-shell:not(.ja-custom) .MuiTableRow-root:hover{background:var(--ja-raised)}
+/* chips, alerts, dialogs, menus */
+body.ja-shell:not(.ja-custom) .MuiChip-root{background:transparent;border:1px solid var(--ja-border);color:var(--ja-text2);font:500 10px var(--ja-font);border-radius:11px}
+body.ja-shell:not(.ja-custom) .MuiAlert-root{background:var(--ja-raised);color:var(--ja-text);border:1px solid var(--ja-border)}
+body.ja-shell .MuiMenu-paper,body.ja-shell .MuiPopover-paper,body.ja-shell .MuiAutocomplete-paper{background:var(--ja-raised)!important;border:1px solid var(--ja-strong);color:var(--ja-text);font-family:var(--ja-font)}
+body.ja-shell .MuiMenuItem-root{font:12px var(--ja-font)}
+body.ja-shell .dialogContainer,body.ja-shell .dialogBackdrop{font-family:var(--ja-font)}
+body.ja-shell .dialog{background:var(--ja-bg)!important;border:1px solid var(--ja-strong);border-radius:10px;color:var(--ja-text)}
+/* user avatars / cards on stock pages */
+body.ja-shell:not(.ja-custom) .cardImageContainer,body.ja-shell:not(.ja-custom) .cardContent{background:var(--ja-raised)}
+body.ja-shell:not(.ja-custom) .cardText{color:var(--ja-text);font-size:12px}
+body.ja-shell:not(.ja-custom) .cardText-secondary{color:var(--ja-muted);font-size:11px}
+body.ja-shell:not(.ja-custom) ::-webkit-scrollbar{width:8px;height:8px}
+body.ja-shell:not(.ja-custom) ::-webkit-scrollbar-thumb{background:var(--ja-strong);border-radius:4px}

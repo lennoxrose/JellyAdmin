@@ -38,7 +38,7 @@
     const devSec = sec({ ico: 'monitor', title: 'Devices', sub: d.devices.length + ' connected', link: ['View all', '/dashboard/devices'] },
       d.devices.slice(0, 5).map((x) => {
         const on = active.includes(x);
-        return item({ left: A().box(A().logoFor(x.Name + ' ' + (x.Client || '') + ' ' + (x.AppName || ''))), title: x.Name + ' · ' + (x.LastUserName || ''), sub: (x.AppName || '') + ' ' + (x.AppVersion || ''),
+        return item({ left: A().box(window.JA.device(x.Name, x.AppName, 18)), title: x.Name + ' · ' + (x.LastUserName || ''), sub: (x.AppName || '') + ' ' + (x.AppVersion || ''),
           right: badge(on ? 'Active now' : 'Idle', on ? 'ok' : '', on ? 'circle-check' : 'circle') });
       }));
 

@@ -24,6 +24,7 @@ body.ja-shell .mainAnimatedPages,body.ja-shell .skinBody{margin-left:264px!impor
 .ja-user{display:flex;align-items:center;gap:10px;border:1px solid var(--ja-border);border-radius:8px;padding:8px;margin-top:12px}
 .ja-uname{font-size:12px;font-weight:500}.ja-urole{font-size:10px;color:var(--ja-muted)}
 .ja-avatar{width:28px;height:28px;border-radius:50%;background:var(--ja-strong);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none}
+.ja-avatar{overflow:hidden}.ja-avatar img{width:100%;height:100%;object-fit:cover;display:block}.ja-mono-icon{filter:invert(1);opacity:.85}
 .ja-avatar.big{width:32px;height:32px}
 .ja-col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 .ja-top{height:52px;flex:none;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--ja-border);background:var(--ja-bg)}
@@ -32,7 +33,7 @@ body.ja-shell .mainAnimatedPages,body.ja-shell .skinBody{margin-left:264px!impor
 .ja-iconbtn:hover{background:var(--ja-raised)}
 .ja-search{position:relative;display:flex;align-items:center;gap:8px;width:300px;height:32px;box-sizing:border-box;border:1px solid var(--ja-border);border-radius:6px;padding:0 10px;background:var(--ja-raised)}
 .ja-search-input{flex:1;background:none;border:0;outline:0;color:var(--ja-text);font:inherit;font-size:12px;min-width:0}
-.ja-search kbd{font:inherit;font-size:10px;color:var(--ja-muted);border:1px solid var(--ja-border);border-radius:4px;padding:1px 5px}
+.ja-search kbd{font:inherit;font-size:11px;color:var(--ja-muted);border:0;background:none;padding:0}
 .ja-results{position:absolute;top:36px;left:0;right:0;background:var(--ja-raised);border:1px solid var(--ja-strong);border-radius:6px;z-index:5;overflow:hidden}
 .ja-result{display:flex;justify-content:space-between;padding:8px 10px;cursor:pointer;font-size:12px}.ja-result:hover{background:var(--ja-strong)}.ja-result small{color:var(--ja-muted)}
 .ja-content{flex:1;overflow:auto;background:var(--ja-bg);display:none}

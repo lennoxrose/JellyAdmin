@@ -30,7 +30,7 @@
         const now = Date.now(), act = (d) => now - new Date(d.DateLastActivity) < 5 * 6e4;
         const ip = (d) => (ss.find((s) => s.DeviceId === d.Id) || {}).RemoteEndPoint || '-';
         const active = ds.filter(act), playing = ss.filter((s) => s.NowPlayingItem);
-        const dev = (d) => h('div', { class: 'ls-who' }, h('div', { class: 'ls-ib' }, JA.browser(d.Name + ' ' + d.AppName, 18)), h('div', {}, h('b', { text: d.Name }), h('small', { text: d.CustomName || d.AppName })));
+        const dev = (d) => h('div', { class: 'ls-who' }, h('div', { class: 'ls-ib' }, JA.device(d.Name, d.AppName, 18)), h('div', {}, h('b', { text: d.Name }), h('small', { text: d.CustomName || d.AppName })));
         const badge = (d) => P.badge(act(d) ? 'Active now' : 'Idle', act(d) ? 'circle-check' : 'circle', act(d) ? 'ok' : 'mute');
         const remove = (d) => h('button', { class: 'ls-more', type: 'button', title: 'Remove device', onclick: async () => {
           if (!confirm('Remove ' + d.Name + '?')) return;

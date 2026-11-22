@@ -58,20 +58,7 @@
     return { a: [P.sec('palette', 'Login', 'Shown on the sign-in page', [
       P.row('Login disclaimer', 'Text shown below the login form', area('LoginDisclaimer', 'Disclaimer', 4), {}),
       P.row('Splash screen', 'Show the splash screen image', P.tgl(c.SplashscreenEnabled, (v) => { c.SplashscreenEnabled = v; }))]),
-      P.sec('code', 'Custom CSS', 'Applied to every client', [P.row('Custom CSS code', 'Styles added to all web clients', area('CustomCss', '/* css */', 10))])], b: [], rail: [] };
-  });
-
-  // ---- Users -------------------------------------------------------------------
-  listPage('/dashboard/users', 'Users', 'Accounts that can sign in to this server', {
-    load: () => get('Users'),
-    actions: () => link('Add user', '/dashboard/users/add'),
-    view: (us) => ({
-      a: [P.sec('users', 'All users', us.length + ' accounts', us.map((u) => rowI('users', u.Name,
-        (u.LastActivityDate ? 'last active ' + when(u.LastActivityDate) : 'never signed in'),
-        h('div', { class: 'pb-actions' }, u.Policy.IsAdministrator ? bd('Admin', 'shield', 'info') : null, u.Policy.IsDisabled ? bd('Disabled', 'circle', 'mute') : null,
-          link('Edit', '/dashboard/users/profile?userId=' + u.Id)))))],
-      rail: [summary('Summary', [['Accounts', us.length], ['Administrators', us.filter((u) => u.Policy.IsAdministrator).length], ['Disabled', us.filter((u) => u.Policy.IsDisabled).length]])]
-    })
+      P.sec('terminal', 'Custom CSS', 'Applied to every client', [P.row('Custom CSS code', 'Styles added to all web clients', area('CustomCss', '/* css */', 10))])], b: [], rail: [] };
   });
 
   // ---- Libraries -----------------------------------------------------------------

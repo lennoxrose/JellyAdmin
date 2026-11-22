@@ -22,7 +22,7 @@ public class CssMiddleware
     {
         var names = Resources.Keys.Where(n => n.StartsWith("web/", StringComparison.OrdinalIgnoreCase)).OrderBy(n => n).ToList();
         var sb = new StringBuilder();
-        foreach (var n in names.Where(n => n == "web/style.css" || n == "web/core.css" || (n.StartsWith("web/pages/") && n.EndsWith(".css"))))
+        foreach (var n in names.Where(n => n == "web/style.css" || n == "web/core.css" || n == "web/stock.css" || (n.StartsWith("web/pages/") && n.EndsWith(".css"))))
             sb.Append($"<link rel=\"stylesheet\" href=\"{Prefix}{n[4..]}\">");
         foreach (var n in names.Where(n => n == "web/core.js"))
             sb.Append($"<script src=\"{Prefix}{n[4..]}\"></script>");

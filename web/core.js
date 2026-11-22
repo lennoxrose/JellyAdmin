@@ -35,6 +35,34 @@
     return img;
   }
 
+  const SI = 'https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/';
+  const PLATFORMS = [['android', SI + 'android.svg'], ['iphone|ipad|ipod|ios|tvos|apple|swiftfin|macos|mac os', SI + 'apple.svg'],
+    ['windows|win32|xbox', 'https://cdn.jsdelivr.net/npm/devicon@2.16.0/icons/windows8/windows8-original.svg'], ['linux|ubuntu|debian', SI + 'linux.svg'],
+    ['roku', SI + 'roku.svg'], ['fire ?tv|amazon|kindle', SI + 'amazon.svg'], ['samsung|tizen', SI + 'samsung.svg'], ['\blg\b|webos', SI + 'lg.svg'],
+    ['kodi', SI + 'kodi.svg'], ['chromecast|cast', SI + 'chromecast.svg'], ['playstation|ps4|ps5', SI + 'playstation.svg']];
+  /** Icon for a device: browser logo when the device is a browser, otherwise its OS/platform, else a monitor. */
+  function device(name, app, size) {
+    const isWeb = /web/i.test(app || '') || !app;
+    const b = isWeb && BROWSERS.some(([re]) => new RegExp(re).test(String(name).toLowerCase()));
+    if (b) return browser(name, size);
+    const t = (String(name) + ' ' + String(app || '')).toLowerCase();
+    const hit = PLATFORMS.find(([re]) => new RegExp(re).test(t));
+    if (!hit) return browser(name, size);
+    const img = h('img', { class: 'ja-icon' + (hit[1].includes('simple-icons') ? ' ja-mono-icon' : ''), alt: '', width: size, height: size, src: hit[1] });
+    img.addEventListener('error', () => img.replaceWith(icon('monitor', size)));
+    return img;
+  }
+  /** User picture (or initial) for the sidebar and topbar. */
+  function avatarFill(el, user) {
+    el.replaceChildren();
+    if (!user) return;
+    if (user.PrimaryImageTag) {
+      const img = h('img', { alt: '', src: ApiClient.getUrl('Users/' + user.Id + '/Images/Primary?tag=' + user.PrimaryImageTag + '&maxHeight=96&quality=90') });
+      img.addEventListener('error', () => { el.replaceChildren(document.createTextNode(user.Name.slice(0, 1).toUpperCase())); });
+      el.append(img);
+    } else el.append(document.createTextNode(user.Name.slice(0, 1).toUpperCase()));
+  }
+
   async function api(method, path, body) {
     const url = ApiClient.getUrl(path);
     const res = await fetch(url, {
@@ -187,7 +215,7 @@
     Promise.resolve(window.ApiClient && ApiClient.getCurrentUser()).then((u) => {
       if (!u) return;
       userName.textContent = u.Name;
-      for (const a of shell.querySelectorAll('.ja-avatar')) a.textContent = u.Name.slice(0, 1).toUpperCase();
+      for (const a of shell.querySelectorAll('.ja-avatar')) avatarFill(a, u);
     }).catch(() => {});
     get('web/ConfigurationPages?EnableInMainMenu=true').then((list) => {
       pluginItems = list.filter((p) => p.Name !== 'Jelly Admin Theme').map((p) => ({
@@ -198,13 +226,19 @@
 
   // classList.add/toggle fire a mutation even when nothing changes, which would retrigger the observer forever.
   const setClass = (c, on) => { if (document.body.classList.contains(c) !== on) document.body.classList.toggle(c, on); };
+  const applyZoom = () => {
+    const z = document.body.classList.contains('ja-shell') ? Math.min(1.5, Math.max(1, window.innerWidth / 1920)) : 1;
+    const v = z === 1 ? '' : String(Math.round(z * 100) / 100);
+    if (document.documentElement.style.zoom !== v) document.documentElement.style.zoom = v;
+  };
+  window.addEventListener('resize', applyZoom);
   function sync() {
     const inDash = document.body.classList.contains('dashboardDocument');
-    if (!inDash) { setClass('ja-shell', false); setClass('ja-custom', false); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
+    if (!inDash) { setClass('ja-shell', false); setClass('ja-custom', false); applyZoom(); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
     if (!shell) {
       try { buildShell(); } catch (e) { console.error('JellyAdmin shell failed', e); window.JA.error = e; return; } // leave stock UI untouched on failure
     }
-    setClass('ja-shell', true);
+    setClass('ja-shell', true); applyZoom();
     const key = location.hash;
     if (key === lastKey) return;
     lastKey = key;
@@ -229,7 +263,7 @@
   const later = () => { clearTimeout(timer); timer = setTimeout(sync, 50); };
   function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; later(); }
 
-  window.JA = { h, icon, browser, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
+  window.JA = { h, icon, browser, device, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
   const start = () => {
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     later();

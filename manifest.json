@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.4.0",
+        "changelog": "Profile pictures, device/OS icons, UI scales with screen width, Users page from Figma, dark styling for stock pages.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.4.0/JellyAdmin_0.3.4.0.zip",
+        "checksum": "4871f3fd32d09cd3ae501957a581852b",
+        "timestamp": "2026-11-22T05:00:00Z"
+      },
+      {
         "version": "0.3.3.0",
         "changelog": "Devices page rebuilt from Figma (stats, table, policies, rail); input widths; breadcrumb.",
         "targetAbi": "10.11.0.0",
