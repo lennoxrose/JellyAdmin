@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace JellyAdmin;
 
-/// <summary>Listens to playback events and writes one PlayRecord per finished playback.</summary>
+/// <summary>Listens to playback events, writes one PlayRecord per finished playback, and exposes the plays still running.</summary>
 public sealed class Collector : IHostedService
 {
     private const int MinSecs = 20;      // same cut-off as the Playback Reporting plugin: shorter plays are accidental starts
@@ -14,8 +14,8 @@ public sealed class Collector : IHostedService
 
     private sealed class Live
     {
-        public long Start; public long Last; public bool Paused; public double Secs;
-        public int Method; public int Kbps; public string? Reasons;
+        public long Last; public bool Paused; public double Secs;
+        public required PlayRecord Rec;
     }
 
     private readonly ISessionManager _sessions;
@@ -40,37 +40,75 @@ public sealed class Collector : IHostedService
         return Task.CompletedTask;
     }
 
+    /// <summary>Plays that are running right now, with the time watched so far, so the page can show them before they stop.</summary>
+    public List<PlayRecord> Running()
+    {
+        var list = new List<PlayRecord>();
+        foreach (var l in _live.Values)
+        {
+            var secs = l.Secs + (l.Paused ? 0 : Math.Min((Now() - l.Last) / 1000.0, MaxGap));
+            if (secs < MinSecs) continue;
+            list.Add(Copy(l.Rec, (int)secs));
+        }
+        return list;
+    }
+
     // Same key shape as Playback Reporting: device + first user + item.
     private static string Key(PlaybackProgressEventArgs e) => e.DeviceId + "|" + e.Users?.FirstOrDefault()?.Id.ToString("N") + "|" + e.Item?.Id.ToString("N");
     private static bool Trackable(PlaybackProgressEventArgs e) => e.Item != null && !e.Item.IsThemeMedia && e.Users is { Count: > 0 };
     private static long Now() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    private static PlayRecord Copy(PlayRecord r, int secs) => new()
+    {
+        Start = r.Start, User = r.User, ItemId = r.ItemId, Kind = r.Kind, Name = r.Name, Series = r.Series, Client = r.Client, Device = r.Device,
+        Method = r.Method, Secs = secs, Kbps = r.Kbps, Reasons = r.Reasons
+    };
+
     private static void Snapshot(Live l, PlaybackProgressEventArgs e)
     {
         var s = e.Session;
         var method = s?.PlayState?.PlayMethod;
-        if (method != null) l.Method = method == MediaBrowser.Model.Session.PlayMethod.Transcode ? 2 : method == MediaBrowser.Model.Session.PlayMethod.DirectStream ? 1 : 0;
+        if (method != null) l.Rec.Method = method == MediaBrowser.Model.Session.PlayMethod.Transcode ? 2 : method == MediaBrowser.Model.Session.PlayMethod.DirectStream ? 1 : 0;
         var t = s?.TranscodingInfo;
         var bps = t?.Bitrate ?? s?.NowPlayingItem?.MediaSources?.FirstOrDefault()?.Bitrate;
-        if (bps > 0) l.Kbps = (int)(bps.Value / 1000);
-        if (t != null && l.Method == 2) l.Reasons = t.TranscodeReasons.ToString();
+        if (bps > 0) l.Rec.Kbps = (int)(bps.Value / 1000);
+        if (t != null && l.Rec.Method == 2) l.Rec.Reasons = t.TranscodeReasons.ToString();
+    }
+
+    private static Live NewLive(PlaybackProgressEventArgs e)
+    {
+        var now = Now();
+        return new Live
+        {
+            Last = now, Paused = e.IsPaused,
+            Rec = new PlayRecord
+            {
+                Start = now,
+                User = e.Users.First().Id.ToString("N"),
+                ItemId = e.Item!.Id.ToString("N"),
+                Kind = e.Item.GetType().Name,
+                Name = e.Item.Name ?? "",
+                Series = (e.Item as Episode)?.SeriesName,
+                Client = e.ClientName ?? "",
+                Device = e.DeviceName ?? ""
+            }
+        };
     }
 
     private void OnStart(object? sender, PlaybackProgressEventArgs e)
     {
         if (!Trackable(e)) return;
-        var now = Now();
-        var l = new Live { Start = now, Last = now, Paused = e.IsPaused };
+        var l = NewLive(e);
         Snapshot(l, e);
         // Same item started again on the same device: close out the earlier play first.
-        if (_live.TryRemove(Key(e), out var old)) { Tick(old); Save(old, e); }
+        if (_live.TryRemove(Key(e), out var old)) { Tick(old); Save(old); }
         _live[Key(e)] = l;
     }
 
     private void OnProgress(object? sender, PlaybackProgressEventArgs e)
     {
         if (!Trackable(e)) return;
-        var l = _live.GetOrAdd(Key(e), _ => new Live { Start = Now(), Last = Now() });
+        var l = _live.GetOrAdd(Key(e), _ => NewLive(e));
         Tick(l);
         l.Paused = e.IsPaused;
         Snapshot(l, e);
@@ -87,26 +125,11 @@ public sealed class Collector : IHostedService
     {
         if (!Trackable(e) || !_live.TryRemove(Key(e), out var l)) return;
         Tick(l);
-        Save(l, e);
+        Save(l);
     }
 
-    private void Save(Live l, PlaybackProgressEventArgs e)
+    private void Save(Live l)
     {
-        if (l.Secs < MinSecs) return;
-        _log.Append(new PlayRecord
-        {
-            Start = l.Start,
-            User = e.Users.First().Id.ToString("N"),
-            ItemId = e.Item!.Id.ToString("N"),
-            Kind = e.Item.GetType().Name,
-            Name = e.Item.Name ?? "",
-            Series = (e.Item as Episode)?.SeriesName,
-            Client = e.ClientName ?? "",
-            Device = e.DeviceName ?? "",
-            Method = l.Method,
-            Secs = (int)l.Secs,
-            Kbps = l.Kbps,
-            Reasons = l.Reasons
-        });
+        if (l.Secs >= MinSecs) _log.Append(Copy(l.Rec, (int)l.Secs));
     }
 }

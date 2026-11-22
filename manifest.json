@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.9.6",
+        "changelog": "Analytics: running plays show live and the page refreshes itself, graph lines no longer dip below the data, hover details on the heatmap and library growth.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.9.6/JellyAdmin_0.3.9.6.zip",
+        "checksum": "80a161a5aafe8fd77bef0d74abd7bb15",
+        "timestamp": "2026-11-22T21:30:00Z"
+      },
+      {
         "version": "0.3.9.5",
         "changelog": "Analytics now collects its own playback data (no Playback Reporting plugin needed): plays, watch time, method, bandwidth, transcode reasons and failed streams. Data starts building from install.",
         "targetAbi": "10.11.0.0",

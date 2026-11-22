@@ -18,17 +18,34 @@
   // shortcut: plugin timestamps are read as server-local time; if the plugin stores UTC the weekday/hour cells shift by the offset.
   const parseTime = (s) => new Date(String(s).replace(' ', 'T').slice(0, 19)).getTime();
 
-  /** Catmull-Rom spline through points as an SVG cubic path. */
+  /** Catmull-Rom spline through points as an SVG cubic path. Control points are clamped between the two points of each
+   *  segment so a sharp step (e.g. 0 to a value) cannot overshoot and dip below or above the data. */
   function smooth(p) {
     let s = 'M' + p[0][0] + ' ' + p[0][1];
     for (let i = 0; i < p.length - 1; i++) {
       const a = p[i - 1] || p[i], b = p[i], c = p[i + 1], e = p[i + 2] || c;
-      s += 'C' + (b[0] + (c[0] - a[0]) / 6) + ' ' + (b[1] + (c[1] - a[1]) / 6) + ' ' + (c[0] - (e[0] - b[0]) / 6) + ' ' + (c[1] - (e[1] - b[1]) / 6) + ' ' + c[0] + ' ' + c[1];
+      const lo = Math.min(b[1], c[1]), hi = Math.max(b[1], c[1]), cl = (y) => Math.max(lo, Math.min(hi, y));
+      s += 'C' + (b[0] + (c[0] - a[0]) / 6) + ' ' + cl(b[1] + (c[1] - a[1]) / 6) + ' ' + (c[0] - (e[0] - b[0]) / 6) + ' ' + cl(c[1] - (e[1] - b[1]) / 6) + ' ' + c[0] + ' ' + c[1];
     }
     return s;
   }
   const legend = (items, left, top) => d('left:' + left + 'px;top:' + top + 'px;display:flex;gap:21px',
     ...items.map(([c, l]) => h('span', { class: 'an-lg' }, h('i', { style: 'background:' + c }), l)));
+  /** Hover tooltip for a panel: show(x, y, title, value) places it centred on x, clamped to the panel. */
+  function tooltip(pane) {
+    const tip = d('display:none;padding:6px 9px;background:#141414;border:1px solid #2a2a2a;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:5');
+    pane.append(tip);
+    return {
+      show(x, y, title, value) {
+        tip.replaceChildren(h('div', { class: 'an-m9', text: title }), h('div', { style: 'font-size:11px;font-weight:700;color:#ededed;margin-top:3px', text: value }));
+        tip.style.display = 'block';
+        const w = tip.offsetWidth;
+        tip.style.left = Math.max(4, Math.min(x - w / 2, pane.clientWidth - w - 4)) + 'px';
+        tip.style.top = y + 'px';
+      },
+      hide() { tip.style.display = 'none'; }
+    };
+  }
   const none = (text) => t(text || 'No data', 'left:0;right:0;top:50%;text-align:center', 'an-m10');
   function panel(x, y, w, hh, title, sub, right) {
     return h('div', { class: 'an-panel', style: 'left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px' },
@@ -52,6 +69,7 @@
     const res = [r4k, r1080, r720, rsd], total = res.reduce((a, b) => a + b, 0);
     return { res, codec: [hevc, h264, av1, Math.max(0, total - hevc - h264 - av1)], items };
   }
+  let libCache = null, libAt = 0; // the library counts are heavy and barely change, so refresh them every 5 minutes
   async function load(days) {
     const now = Date.now(), hourly = days === 1, step = hourly ? HOUR : DAY, n = hourly ? 24 : days;
     const mid = new Date(now); mid.setHours(0, 0, 0, 0);
@@ -61,7 +79,7 @@
       [rows, users] = await Promise.all([get('JellyAdminApi/Analytics?since=' + prevStart), get('Users').catch(() => [])]);
       rows = rows.map((r) => ({ t: r.t, userid: r.u, itemtype: r.k, itemname: r.s || r.n, method: r.m, clientname: r.c, secs: r.secs, kbps: r.kbps, reasons: r.r, failed: !!r.f }));
     } catch (e) { error = e.message; }
-    return { days, hourly, step, n, start, end, rows, error, users, lib: await library() };
+    return { days, hourly, step, n, start, end, rows, error, users, lib: libCache && Date.now() - libAt < 3e5 ? libCache : (libAt = Date.now(), libCache = await library()) };
   }
 
   // ---- view ----------------------------------------------------------------------
@@ -204,8 +222,9 @@
 
     // Heatmap
     const hm = panel(576, 548, 504, 244, 'Watch time heatmap', 'Hour of day × weekday', 'Avg. hours');
-    const cell = Array.from({ length: 7 }, () => new Array(24).fill(0)), occ = new Array(7).fill(0);
+    const cell = Array.from({ length: 7 }, () => new Array(24).fill(0)), starts = Array.from({ length: 7 }, () => new Array(24).fill(0)), occ = new Array(7).fill(0);
     cur.forEach((r) => { // spread a play over the hours it actually ran
+      const st = new Date(r.t); starts[st.getDay()][st.getHours()]++;
       for (let ts = r.t, endT = r.t + r.secs * 1000; ts < endT;) {
         const hb = Math.floor(ts / HOUR) * HOUR, seg = Math.min(endT, hb + HOUR) - ts, x = new Date(hb);
         cell[x.getDay()][x.getHours()] += seg / HOUR;
@@ -215,10 +234,17 @@
     for (let ts = D.start; ts < D.end; ts += DAY) occ[new Date(ts).getDay()]++;
     const avg = cell.map((row, wd) => row.map((v) => v / (occ[wd] || 1))), hmax = Math.max(...avg.flat(), 0);
     const shade = (v) => !v ? '#141414' : v / hmax <= .25 ? '#2b1b55' : v / hmax <= .5 ? '#5b34b0' : v / hmax <= .75 ? '#8b5cf6' : '#c4a6ff';
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], hmTip = tooltip(hm);
     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((day, r) => {
       const y = 71 + r * 18.6, wd = (r + 1) % 7;
       hm.append(t(day, 'left:17px;top:' + (y + 2) + 'px', 'an-m9'));
-      for (let c = 0; c < 24; c++) hm.append(h('div', { title: day + ' ' + pad(c) + ':00 · ' + avg[wd][c].toFixed(1) + ' h', style: 'position:absolute;width:14px;height:14px;border-radius:3px;left:' + (53 + c * 18.6) + 'px;top:' + y + 'px;background:' + shade(avg[wd][c]) }));
+      for (let c = 0; c < 24; c++) {
+        const cellEl = d('width:14px;height:14px;border-radius:3px;left:' + (53 + c * 18.6) + 'px;top:' + y + 'px;background:' + shade(avg[wd][c]));
+        cellEl.addEventListener('mouseenter', () => hmTip.show(53 + c * 18.6 + 7, y - 46, dayNames[r] + ' ' + pad(c) + ':00-' + pad((c + 1) % 24) + ':00',
+          avg[wd][c].toFixed(1) + ' h avg · ' + starts[wd][c] + (starts[wd][c] === 1 ? ' play' : ' plays')));
+        cellEl.addEventListener('mouseleave', hmTip.hide);
+        hm.append(cellEl);
+      }
     });
     [['00', 52], ['06', 163.6], ['12', 275.2], ['18', 386.8], ['23', 479.8]].forEach(([l, x]) => hm.append(t(l, 'left:' + x + 'px;top:207.2px', 'an-m9')));
     hm.append(t('Less', 'left:379px;top:37px', 'an-m9'), t('More', 'left:475px;top:37px', 'an-m9'));
@@ -251,13 +277,23 @@
     // Library growth
     const lg = panel(444, 816, 372, 188, 'Library growth', 'New items per month', '');
     const nowD = new Date(), months = Array.from({ length: 12 }, (_, i) => new Date(nowD.getFullYear(), nowD.getMonth() - 11 + i, 1)), counts = new Array(12).fill(0);
-    D.lib.items.forEach((it) => { const x = new Date(it.DateCreated); const i = (x.getFullYear() - months[0].getFullYear()) * 12 + x.getMonth() - months[0].getMonth(); if (i >= 0 && i < 12) counts[i]++; });
+    const films = new Array(12).fill(0);
+    D.lib.items.forEach((it) => {
+      const x = new Date(it.DateCreated), i = (x.getFullYear() - months[0].getFullYear()) * 12 + x.getMonth() - months[0].getMonth();
+      if (i >= 0 && i < 12) { counts[i]++; if (it.Type === 'Movie') films[i]++; }
+    });
     const cmax = Math.max(...counts, 1), y0 = months[0].getFullYear(), y1 = months[11].getFullYear();
     lg.lastChild.textContent = y0 === y1 ? String(y1) : y0 + '–' + String(y1).slice(2);
+    const lgTip = tooltip(lg);
     counts.forEach((c, i) => {
       const bh = c / cmax * 100, x = 20 + i * 28, col = i % 2 ? BL : PU;
-      lg.append(d('left:' + x + 'px;top:' + (159 - bh) + 'px;width:18px;height:' + bh + 'px;border-radius:3px;background:linear-gradient(to bottom,' + col + ',' + rgba(col, .45) + ')', ), t('JFMAMJJASOND'[months[i].getMonth()], 'left:' + (x + 9) + 'px;top:165px;width:18px;text-align:center;transform:translateX(-50%)', 'an-m9'));
-      lg.lastChild.previousSibling.title = months[i].toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ': ' + c;
+      lg.append(d('left:' + x + 'px;top:' + (159 - bh) + 'px;width:18px;height:' + bh + 'px;border-radius:3px;background:linear-gradient(to bottom,' + col + ',' + rgba(col, .45) + ')'),
+        t('JFMAMJJASOND'[months[i].getMonth()], 'left:' + (x + 9) + 'px;top:165px;width:18px;text-align:center;transform:translateX(-50%)', 'an-m9'));
+      const hit = d('left:' + (x - 5) + 'px;top:45px;width:28px;height:130px');
+      hit.addEventListener('mouseenter', () => lgTip.show(x + 9, Math.max(44, 159 - bh - 52), months[i].toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        c + (c === 1 ? ' item' : ' items') + ' · ' + films[i] + ' movies, ' + (c - films[i]) + ' episodes'));
+      hit.addEventListener('mouseleave', lgTip.hide);
+      lg.append(hit);
     });
     lg.append(d('left:17px;top:159px;width:336px;height:1px;background:#2a2a2a')); out.push(lg);
 
@@ -304,8 +340,8 @@
     let data = null, days = 30, seq = 0;
     const labels = RANGES.map(([l], i) => t(l, 'left:' + (1298 + i * 48) + 'px;top:33px;width:46px;text-align:center;font-size:11px;font-weight:500', ''));
     const mark = () => { pill.style.left = 1298 + RANGES.findIndex((r) => r[1] === days) * 48 + 'px'; labels.forEach((p, i) => { p.style.color = RANGES[i][1] === days ? '#0d0d0d' : '#7a7a7a'; }); };
-    async function go(dd) {
-      days = dd; mark(); const mine = ++seq; body.style.opacity = '.4';
+    async function go(dd, quiet) {
+      days = dd; mark(); const mine = ++seq; if (!quiet) body.style.opacity = '.4';
       const D = await load(dd); if (mine !== seq) return;
       data = D; body.replaceChildren(...build(D)); body.style.opacity = '';
       sub.textContent = D.error ? 'Could not load playback data (' + D.error + ')'
@@ -324,6 +360,7 @@
     // The layout is fixed at the design's 1656px; shrink it to fit narrower windows instead of clipping.
     const fit = () => { root.style.zoom = el.clientWidth ? Math.min(1, el.clientWidth / 1656) : 1; };
     const ro = new ResizeObserver(fit); ro.observe(el); fit();
-    return () => ro.disconnect();
+    const live = setInterval(() => go(days, true), 15000); // new and running plays show up without a reload
+    return () => { ro.disconnect(); clearInterval(live); };
   } });
 })();

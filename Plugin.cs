@@ -38,7 +38,8 @@ public class Registrator : IPluginServiceRegistrator
     {
         services.AddTransient<IStartupFilter, Filter>();
         services.AddSingleton<PlayLog>();
-        services.AddHostedService<Collector>();
+        services.AddSingleton<Collector>();
+        services.AddHostedService(sp => sp.GetRequiredService<Collector>());
     }
 
     private sealed class Filter : IStartupFilter
