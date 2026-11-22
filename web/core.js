@@ -127,6 +127,7 @@
     { section: 'SERVER', items: [
       { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
       { label: 'General', path: '/dashboard/settings', icon: 'settings' },
+      { label: 'Analytics', path: '/dashboard/analytics', icon: 'analytics' },
       { label: 'Branding', path: '/dashboard/branding', icon: 'palette' },
       { label: 'Users', path: '/dashboard/users', icon: 'users' },
       { label: 'Libraries', path: '/dashboard/libraries', icon: 'library', children: [
@@ -214,7 +215,7 @@
     const top = h('header', { class: 'ja-top' },
       h('button', { class: 'ja-iconbtn', type: 'button', onclick: () => history.back(), 'aria-label': 'Back' }, icon('arrow-left', 14)),
       crumbEl, h('i', { class: 'ja-grow' }),
-      h('div', { class: 'ja-search' }, icon('search', 14), input, h('kbd', {}, h('span', { text: '⌘' }), h('span', { text: 'K' })), results),
+      h('div', { class: 'ja-search' }, icon('an/iconsearch', 14), input, h('kbd', {}, icon('an/iconcommand', 15), h('span', { text: 'K' })), results),
       h('button', { class: 'ja-iconbtn', type: 'button', onclick: () => go('/dashboard/activity'), 'aria-label': 'Activity' }, icon('bell', 14)),
       h('div', { class: 'ja-avatar big' }));
     content = h('main', { class: 'ja-content' });
