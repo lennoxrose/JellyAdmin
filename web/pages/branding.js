@@ -22,7 +22,7 @@
           const f = file.files[0]; if (!f) return;
           const data = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.readAsDataURL(f); });
           try {
-            const res = await fetch(ApiClient.getUrl('Branding/Splashscreen'), { method: 'POST', headers: { 'X-Emby-Token': ApiClient.accessToken(), 'Content-Type': f.type }, body: data });
+            const res = await fetch(ApiClient.getUrl('Branding/Splashscreen'), { method: 'POST', headers: { ...JA.auth(), 'Content-Type': f.type }, body: data });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             toast('Splash image uploaded');
           } catch (e) { toast('Upload failed: ' + e.message, 'error'); }

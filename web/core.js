@@ -71,11 +71,13 @@
     } else el.append(document.createTextNode(user.Name.slice(0, 1).toUpperCase()));
   }
 
+  // Jellyfin deprecated the X-Emby-Token header and api_key parameter (newer servers disable them), so use the Authorization scheme.
+  const auth = () => ({ Authorization: 'MediaBrowser Token="' + ApiClient.accessToken() + '"' });
   async function api(method, path, body) {
     const url = ApiClient.getUrl(path);
     const res = await fetch(url, {
       method,
-      headers: { 'X-Emby-Token': ApiClient.accessToken(), 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { ...auth(), 'Content-Type': 'application/json', Accept: 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body)
     });
     if (!res.ok) throw new Error(method + ' ' + path + ' -> HTTP ' + res.status);
@@ -289,7 +291,7 @@
   const later = () => { clearTimeout(timer); timer = setTimeout(sync, 50); };
   function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; later(); }
 
-  window.JA = { h, icon, pluginIcon, browser, device, family, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
+  window.JA = { auth, h, icon, pluginIcon, browser, device, family, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
   const start = () => {
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     later();

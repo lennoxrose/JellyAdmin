@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.4.0.1",
+        "changelog": "Fix 401 errors on newer Jellyfin servers: requests now use the Authorization header instead of the deprecated X-Emby-Token header and api_key parameter.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.4.0.1/JellyAdmin_0.4.0.1.zip",
+        "checksum": "0fa22c7a7619a4d5d29b5c10d26a4ccc",
+        "timestamp": "2026-11-23T09:00:00Z"
+      },
+      {
         "version": "0.4.0.0",
         "changelog": "Analytics page with built-in playback collection. Playback activity tooltip now only shows on hover. Sidebar shows the installed JellyAdmin version.",
         "targetAbi": "10.11.0.0",

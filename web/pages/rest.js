@@ -161,7 +161,8 @@
     load: () => get('System/Logs'),
     view: (ls) => ({
       a: [P.sec('logs', 'Files', ls.length + ' logs', ls.map((l) => rowI('logs', l.Name, window.JA.bytes(l.Size) + ' · ' + when(l.DateModified),
-        h('a', { class: 'pb-btn', target: '_blank', href: ApiClient.getUrl('System/Logs/Log?name=' + encodeURIComponent(l.Name)) + '&api_key=' + ApiClient.accessToken() }, h('span', { text: 'Open' })))))],
+        h('button', { class: 'pb-btn', type: 'button', onclick: async () => { // fetch with the auth header, then open the text in a new tab
+          try { window.open(URL.createObjectURL(new Blob([await window.JA.get('System/Logs/Log?name=' + encodeURIComponent(l.Name))], { type: 'text/plain' }))); } catch (e) { window.JA.toast(e.message, 'error'); } } }, h('span', { text: 'Open' })))))],
       rail: [summary('Summary', [['Files', ls.length]])]
     })
   });
