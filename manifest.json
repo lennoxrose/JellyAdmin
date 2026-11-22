@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.6.0",
+        "changelog": "User profile pages: checkbox ticks, tab bar; polish.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.6.0/JellyAdmin_0.3.6.0.zip",
+        "checksum": "543a4480ca2f7436fec06fe4e01f03ab",
+        "timestamp": "2026-11-22T07:00:00Z"
+      },
+      {
         "version": "0.3.5.0",
         "changelog": "Branding page from Figma; plugin sidebar entries are dynamic with per-plugin icons; plugin config pages and user sub-pages styled; device/OS icon grouping; stock fallback links for library and tuner setup.",
         "targetAbi": "10.11.0.0",

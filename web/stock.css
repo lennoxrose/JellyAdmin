@@ -100,3 +100,15 @@ body.ja-shell:not(.ja-custom) .ui-btn-active,body.ja-shell:not(.ja-custom) a.emb
 body.ja-shell:not(.ja-custom) .localnav,body.ja-shell:not(.ja-custom) .ui-controlgroup{background:var(--ja-raised);border:1px solid var(--ja-border);border-radius:8px;overflow:hidden}
 body.ja-shell:not(.ja-custom) .localnav a.emby-button{color:var(--ja-text2)!important;background:transparent!important}
 body.ja-shell:not(.ja-custom) .emby-checkbox:checked~.checkboxIcon,body.ja-shell:not(.ja-custom) .emby-checkbox:checked+span+.checkboxIcon{background:var(--ja-text)!important;color:#000!important;border-color:var(--ja-text)!important}
+/* classic checkbox: dark box, white fill with a drawn tick when checked (the icon font glyphs are not drawn here) */
+body.ja-shell:not(.ja-custom) .checkboxOutline{border:1px solid var(--ja-strong)!important;background:var(--ja-raised)!important;border-radius:4px!important;box-shadow:none!important}
+body.ja-shell:not(.ja-custom) .checkboxOutline .checkboxIcon{display:none!important}
+body.ja-shell:not(.ja-custom) .emby-checkbox:checked~.checkboxOutline{background:var(--ja-text)!important;border-color:var(--ja-text)!important}
+body.ja-shell:not(.ja-custom) .emby-checkbox:checked~.checkboxOutline::after{content:'';position:absolute;left:50%;top:46%;width:5px;height:10px;margin:-6px 0 0 -3px;border:solid #000;border-width:0 2px 2px 0;transform:rotate(45deg)}
+body.ja-shell:not(.ja-custom) .checkboxOutline{position:absolute}
+/* tab bar: same width as the form, white active pill (must come after the generic .localnav rule) */
+body.ja-shell:not(.ja-custom) .localnav{max-width:804px;display:flex;gap:4px;padding:4px}
+body.ja-shell:not(.ja-custom) .localnav a.emby-button{flex:1;text-align:center;border:0!important;border-radius:6px!important;height:32px;display:flex;align-items:center;justify-content:center}
+body.ja-shell:not(.ja-custom) .localnav a.emby-button.ui-btn-active{background:var(--ja-text)!important;color:#000!important}
+body.ja-shell:not(.ja-custom) .localnav{box-sizing:border-box}
+body.ja-shell:not(.ja-custom) .localnav a.emby-button{line-height:1;padding:0}
