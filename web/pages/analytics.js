@@ -104,8 +104,8 @@
       ['TRANSCODES', tcPct(cur).toFixed(1) + '%', (tcPct(cur) >= tcPct(prev) ? '+' : '') + (tcPct(cur) - tcPct(prev)).toFixed(1) + '%', tcPct(cur) <= tcPct(prev) ? GR : AM, series(cur, tcPct), TL],
       ['FAILED STREAMS', '-', null, null, null, RD]];
     kpis.forEach(([label, value, delta, dc, ser, color], i) => {
-      const x = 48 + i * 260;
-      if (i) out.push(d('left:' + x + 'px;top:86px;width:1px;height:111px;background:#1f1f1f'));
+      const x = 48 + i * 260 + (i ? 24 : 0); // cells after the first sit 24px right of their divider
+      if (i) out.push(d('left:' + (48 + i * 260) + 'px;top:86px;width:1px;height:111px;background:#1f1f1f'));
       out.push(t(label, 'left:' + x + 'px;top:102px', 'an-kl'), t(value, 'left:' + x + 'px;top:122px', 'an-kv'));
       if (delta != null) out.push(d('left:' + x + 'px;top:160px;display:flex;gap:10px;white-space:nowrap', h('span', { style: 'font-size:11px;font-weight:500;color:' + dc, text: delta }), h('span', { style: 'font-size:10px;color:#7a7a7a', text: 'vs prev. period' })));
       if (ser && ser.length > 1) {
@@ -287,5 +287,9 @@
         const a = h('a', { href: URL.createObjectURL(new Blob([csv(data.rows)], { type: 'text/csv' })), download: 'playback-' + days + 'd.csv' }); a.click(); URL.revokeObjectURL(a.href);
       } }), body);
     el.append(root); go(days);
+    // The layout is fixed at the design's 1656px; shrink it to fit narrower windows instead of clipping.
+    const fit = () => { root.style.zoom = el.clientWidth ? Math.min(1, el.clientWidth / 1656) : 1; };
+    const ro = new ResizeObserver(fit); ro.observe(el); fit();
+    return () => ro.disconnect();
   } });
 })();
