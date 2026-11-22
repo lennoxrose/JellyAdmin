@@ -9,6 +9,14 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "0.3.1.0",
+        "changelog": "Fix shell not mounting on first load (script ran before body existed); keep stock UI if the shell fails.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/lennoxrose/JellyAdmin/releases/download/v0.3.1.0/JellyAdmin_0.3.1.0.zip",
+        "checksum": "929bf5d19430837048f2234c9643bcd6",
+        "timestamp": "2026-11-22T03:30:00Z"
+      },
+      {
         "version": "0.3.0.0",
         "changelog": "Full Jelly Admin shell and Figma pages for every admin route; browser logos from jsDelivr.",
         "targetAbi": "10.11.0.0",

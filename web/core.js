@@ -198,9 +198,11 @@
 
   function sync() {
     const inDash = document.body.classList.contains('dashboardDocument');
-    document.body.classList.toggle('ja-shell', inDash);
-    if (!inDash) { if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
-    if (!shell) { buildShell(); }
+    if (!inDash) { document.body.classList.remove('ja-shell', 'ja-custom'); if (cleanup) { cleanup(); cleanup = null; } lastKey = null; return; }
+    if (!shell) {
+      try { buildShell(); } catch (e) { console.error('JellyAdmin shell failed', e); window.JA.error = e; return; } // leave stock UI untouched on failure
+    }
+    document.body.classList.add('ja-shell');
     const key = location.hash;
     if (key === lastKey) return;
     lastKey = key;
@@ -223,8 +225,10 @@
   function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; if (shell) sync(); }
 
   window.JA = { h, icon, browser, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
+  const start = () => {
+    new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  };
   window.addEventListener('hashchange', sync);
-  new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  document.addEventListener('DOMContentLoaded', sync);
-  sync();
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
