@@ -69,3 +69,34 @@ body.ja-shell:not(.ja-custom) .cardText{color:var(--ja-text);font-size:12px}
 body.ja-shell:not(.ja-custom) .cardText-secondary{color:var(--ja-muted);font-size:11px}
 body.ja-shell:not(.ja-custom) ::-webkit-scrollbar{width:8px;height:8px}
 body.ja-shell:not(.ja-custom) ::-webkit-scrollbar-thumb{background:var(--ja-strong);border-radius:4px}
+
+/* tab bars on stock user pages: no blue accent */
+body.ja-shell:not(.ja-custom) .MuiTabs-root{background:transparent!important}
+body.ja-shell:not(.ja-custom) .MuiTab-root.Mui-selected,body.ja-shell:not(.ja-custom) .Mui-selected.MuiTab-root{background:var(--ja-raised)!important;color:var(--ja-text)!important;border-radius:6px}
+body.ja-shell:not(.ja-custom) .MuiButtonGroup-root .MuiButton-root{border-radius:0!important}
+body.ja-shell:not(.ja-custom) .page .content-primary,body.ja-shell:not(.ja-custom) .pluginConfigurationPage>div{padding-top:24px}
+/* plugin config pages */
+body.ja-shell:not(.ja-custom) .pluginConfigurationPage{color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .pluginConfigurationPage a:not(.emby-button){color:var(--ja-info)}
+body.ja-shell:not(.ja-custom) .pluginConfigurationPage .emby-button:not(.raised):not(.button-submit){color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .skip-link,body.ja-shell:not(.ja-custom) a[href="#main"]{position:absolute;left:-9999px}
+body.ja-shell:not(.ja-custom) .verticalSection,body.ja-shell:not(.ja-custom) .readOnlyContent{max-width:1100px}
+body.ja-shell:not(.ja-custom) fieldset{border:1px solid var(--ja-border);border-radius:10px;padding:16px;margin:0 0 16px}
+body.ja-shell:not(.ja-custom) legend{color:var(--ja-text2);font-size:11px;padding:0 6px}
+body.ja-shell:not(.ja-custom) .emby-checkbox-label,body.ja-shell:not(.ja-custom) .checkboxLabel{color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .emby-collapsible-button,body.ja-shell:not(.ja-custom) .collapsible-button{color:var(--ja-text);border-color:var(--ja-border)}
+body.ja-shell:not(.ja-custom) .emby-tabs-slider{display:flex;gap:4px;padding:6px 0}
+body.ja-shell:not(.ja-custom) .emby-tab-button{border-radius:6px;padding:6px 12px;opacity:1}
+body.ja-shell:not(.ja-custom) .emby-tab-button-active{background:var(--ja-raised);color:var(--ja-text)}
+body.ja-shell:not(.ja-custom) .emby-tab-button-active::after,body.ja-shell:not(.ja-custom) .emby-tabs-slider .emby-tab-button-active:after{display:none}
+body.ja-shell:not(.ja-custom) .pluginConfigurationPage table,body.ja-shell:not(.ja-custom) .pluginConfigurationPage td,body.ja-shell:not(.ja-custom) .pluginConfigurationPage th{border-color:var(--ja-border);color:var(--ja-text)}
+/* plugin pages hard-code Jellyfin blue; swap it for the design's white accent */
+body.ja-shell{--theme-primary-color:#fafafa;--theme-accent-color:#fafafa;--primary-color:#fafafa;--accent-color:#fafafa;accent-color:#fafafa}
+body.ja-shell:not(.ja-custom) .tab-button.tab-active{color:var(--ja-text)!important;border-color:var(--ja-text)!important}
+body.ja-shell:not(.ja-custom) .save-button,body.ja-shell:not(.ja-custom) .skip-link:focus{background:#fafafa!important;color:#000!important;border-radius:6px}
+body.ja-shell:not(.ja-custom) input[type=checkbox],body.ja-shell:not(.ja-custom) input[type=radio],body.ja-shell:not(.ja-custom) input[type=range]{accent-color:#fafafa}
+/* user sub-page tab bar (Profile / Access / Parental control / Password) */
+body.ja-shell:not(.ja-custom) .ui-btn-active,body.ja-shell:not(.ja-custom) a.emby-button.ui-btn-active{background:var(--ja-text)!important;color:#000!important;border-radius:6px}
+body.ja-shell:not(.ja-custom) .localnav,body.ja-shell:not(.ja-custom) .ui-controlgroup{background:var(--ja-raised);border:1px solid var(--ja-border);border-radius:8px;overflow:hidden}
+body.ja-shell:not(.ja-custom) .localnav a.emby-button{color:var(--ja-text2)!important;background:transparent!important}
+body.ja-shell:not(.ja-custom) .emby-checkbox:checked~.checkboxIcon,body.ja-shell:not(.ja-custom) .emby-checkbox:checked+span+.checkboxIcon{background:var(--ja-text)!important;color:#000!important;border-color:var(--ja-text)!important}

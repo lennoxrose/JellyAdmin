@@ -19,7 +19,7 @@
         const failed24 = logins.filter((e) => e.Type === 'AuthenticationFailed' && Date.now() - new Date(e.Date) < 864e5).length;
         const active = us.filter((u) => { const d = lastDev(u); return d && act(d); });
         const browsers = {};
-        ds.forEach((d) => { browsers[d.Name] = (browsers[d.Name] || 0) + 1; });
+        ds.forEach((d) => { const k = JA.family(d.Name, d.AppName); browsers[k] = (browsers[k] || 0) + 1; });
         const adm = us.filter((u) => u.Policy.IsAdministrator).length, dis = us.filter((u) => u.Policy.IsDisabled).length;
         const rows = us.map((u) => {
           const d = lastDev(u);
@@ -48,7 +48,7 @@
         b: [], rail: [
           P.rsec('Summary', [['Total users', us.length], ['Administrators', adm], ['Signed in now', active.length], ['Failed sign-ins (24h)', failed24]]
             .map(([k, v]) => P.row(k, null, h('p', { class: 'pb-sv', text: String(v) }), { py: 9 }))),
-          P.sec('globe', 'Browsers', 'Used to sign in', Object.entries(browsers).map(([n, c]) => P.row(n, c + ' devices', h('p', { class: 'pb-sv', text: Math.round(c / ds.length * 100) + '%' }), { lead: h('div', { class: 'ls-ib' }, JA.device(n, 'Jellyfin Web', 18)) }))),
+          P.sec('globe', 'Browsers', 'Used to sign in', Object.entries(browsers).map(([n, c]) => P.row(n, c + ' devices', h('p', { class: 'pb-sv', text: Math.round(c / ds.length * 100) + '%' }), { lead: h('div', { class: 'ls-ib' }, JA.device(n, /web|chrome|firefox|edge|opera|safari|brave|vivaldi|samsung|yandex|uc|chromium/i.test(n) ? 'Jellyfin Web' : n, 18)) }))),
           P.rsec('Related', [P.relatedLink('monitor', 'Devices', 'Signed in browsers', '/dashboard/devices'), P.relatedLink('activity', 'Activity', 'Sign-in events', '/dashboard/activity'),
             P.relatedLink('key', 'API Keys', 'Programmatic access', '/dashboard/keys'), P.relatedLink('lock', 'Networking', 'Remote access', '/dashboard/networking')]),
           P.rsec('Notes', [P.note('info', 'Users can change their own password and display name.'), P.note('alert', 'Admins can see and manage every library.')])] };

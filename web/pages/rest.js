@@ -52,19 +52,10 @@
   const empty = (msg, ico) => [P.row(msg, null, null, { py: 14, lead: lead(ico || 'info') })];
   const summary = (title, pairs) => P.rsec(title, pairs.map(([k, v]) => P.row(k, null, h('p', { class: 'pb-sv', text: String(v) }), { py: 9 })));
 
-  // ---- Branding ----------------------------------------------------------------
-  settings('/dashboard/branding', 'Branding', 'Login screen and custom styling', 'Branding/Configuration', (c) => {
-    const area = (k, ph, rows) => { const t = h('textarea', { class: 'pb-in', rows, placeholder: ph, spellcheck: 'false', style: 'width:360px;height:' + rows * 20 + 'px;padding:8px 10px;resize:vertical' }); t.value = c[k] || ''; t.addEventListener('input', () => { c[k] = t.value; }); return t; };
-    return { a: [P.sec('palette', 'Login', 'Shown on the sign-in page', [
-      P.row('Login disclaimer', 'Text shown below the login form', area('LoginDisclaimer', 'Disclaimer', 4), {}),
-      P.row('Splash screen', 'Show the splash screen image', P.tgl(c.SplashscreenEnabled, (v) => { c.SplashscreenEnabled = v; }))]),
-      P.sec('terminal', 'Custom CSS', 'Applied to every client', [P.row('Custom CSS code', 'Styles added to all web clients', area('CustomCss', '/* css */', 10))])], b: [], rail: [] };
-  });
-
   // ---- Libraries -----------------------------------------------------------------
   listPage('/dashboard/libraries', 'Libraries', 'Media folders on this server', {
     load: () => get('Library/VirtualFolders'),
-    actions: (_, refresh) => [bt('Scan all libraries', 'sync', false, () => tryDo(() => post('Library/Refresh'), 'Library scan started')),
+    actions: (_, refresh) => [link('Manage libraries', '/dashboard/libraries?stock=1'), bt('Scan all libraries', 'sync', false, () => tryDo(() => post('Library/Refresh'), 'Library scan started')),
       bt('Add library', 'plus', true, () => addLibrary(refresh))],
     view: (libs, refresh) => ({
       a: [P.sec('library', 'Libraries', libs.length + ' configured', libs.length ? libs.map((l) => rowI('folder', l.Name, (l.CollectionType || 'mixed') + ' · ' + (l.Locations || []).join(', '),
@@ -210,7 +201,7 @@
         bt('Remove', 'trash', false, async () => { if (sure('Remove this tuner?') && await tryDo(() => del('LiveTv/TunerHosts?id=' + t.Id), 'Removed')) refresh(); }))) : empty('No tuners configured', 'tv')),
         P.sec('layers', 'TV guide data', (c.ListingProviders || []).length + ' providers', (c.ListingProviders || []).length ? c.ListingProviders.map((p) => rowI('layers', p.Type, p.Path || p.ListingsId || '',
           bt('Remove', 'trash', false, async () => { if (sure('Remove this provider?') && await tryDo(() => del('LiveTv/ListingProviders?id=' + p.Id), 'Removed')) refresh(); }))) : empty('No guide providers', 'layers'))],
-      rail: [P.rsec('Notes', [P.note('info', 'Adding tuners and guide providers needs the stock setup dialogs; toggle the theme off in the plugin settings to use them.')])]
+      rail: [P.rsec('Notes', [P.note('info', 'Tuners and guide providers are set up in the original Jellyfin page.'), P.relatedLink('tv', 'Open tuner setup', 'Original Jellyfin page', '/dashboard/livetv?stock=1')])]
     })
   });
   listPage('/dashboard/livetv/recordings', 'DVR', 'Scheduled and series recordings', {

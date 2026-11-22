@@ -37,12 +37,12 @@
           try { await del('Devices?id=' + d.Id); ui.reload(); } catch (e) { toast(e.message, 'error'); }
         } }, icon('more', 14));
         const browsers = {};
-        ds.forEach((d) => { browsers[d.Name] = (browsers[d.Name] || 0) + 1; });
+        ds.forEach((d) => { const k = JA.family(d.Name, d.AppName); browsers[k] = (browsers[k] || 0) + 1; });
         const users = (list) => [...new Set(list.map((d) => d.LastUserName))].join(', ') || '-';
         return { a: [
           stats([{ ico: 'monitor', label: 'Devices', v: ds.length, sub: 'all browsers' }, { ico: 'activity', label: 'Active now', v: active.length, sub: users(active) },
             { ico: 'clock', label: 'Idle', v: ds.length - active.length, sub: users(ds.filter((d) => !act(d))) }, { ico: 'play', label: 'Playing', v: playing.length, sub: playing.length ? 'now' : 'nothing right now' }]),
-          table([{ label: 'Device', w: 190 }, { label: 'User', w: 130 }, { label: 'App', w: 180 }, { label: 'IP address', w: 120 }, { label: 'Last active', w: 130 }, { label: 'Status' }],
+          table([{ label: 'Device', w: 190 }, { label: 'User', w: 130 }, { label: 'App', w: 180 }, { label: 'IP address', w: 110 }, { label: 'Last active', w: 170 }, { label: 'Status' }],
             ds.map((d) => [dev(d), d.LastUserName || '-', (d.AppName || '') + ' ' + (d.AppVersion || ''), ip(d), when(d.DateLastActivity), h('div', { class: 'ls-who', style: 'justify-content:space-between' }, badge(d), remove(d))])),
           // Jellyfin has no server setting for these; shown as in the design, not persisted.
           P.sec('settings', 'Device policies', 'Housekeeping', [
@@ -54,11 +54,11 @@
             ? playing.map((s) => P.row(s.NowPlayingItem.Name, s.UserName + ' · ' + s.Client, P.badge('Playing', 'play', 'info')))
             : [P.row('Nothing is playing', 'Streams appear here while someone is watching', null, { lead: icon('circle-check', 16) })])],
         b: [], rail: [
-          P.rsec('Summary', [['Devices', ds.length], ['Browsers', Object.keys(browsers).length + ' (' + Object.keys(browsers).join(', ') + ')'], ['Apps', [...new Set(ds.map((d) => d.AppName))].join(', ')]]
+          P.rsec('Summary', [['Devices', ds.length], ['Clients', Object.keys(browsers).length], ['Apps', [...new Set(ds.map((d) => d.AppName))].length]]
             .map(([k, v]) => P.row(k, null, h('p', { class: 'pb-sv', text: String(v) }), { py: 9 }))),
-          P.sec('globe', 'Browsers', 'Share of devices', Object.entries(browsers).map(([n, c]) => P.row(n, 'Jellyfin Web',
+          P.sec('globe', 'Clients', 'Share of devices', Object.entries(browsers).sort((a, b) => b[1] - a[1]).map(([n, c]) => P.row(n, c === 1 ? '1 device' : c + ' devices',
             h('div', { style: 'width:116px' }, h('p', { class: 'pb-sv', text: c + ' of ' + ds.length }), h('div', { class: 'ls-bar' }, h('i', { style: 'width:' + Math.round(c / ds.length * 100) + '%' }))),
-            { lead: h('div', { class: 'ls-ib' }, JA.browser(n, 18)) }))),
+            { lead: h('div', { class: 'ls-ib' }, JA.device(n, /web|chrome|firefox|edge|opera|safari|brave|vivaldi|samsung|yandex|uc|chromium/i.test(n) ? 'Jellyfin Web' : n, 18)) }))),
           P.rsec('Related', [P.relatedLink('users', 'Users', 'Accounts and access', '/dashboard/users'), P.relatedLink('activity', 'Activity', 'Sign-in events', '/dashboard/activity'), P.relatedLink('network', 'Networking', 'Remote access', '/dashboard/networking')]),
           P.rsec('Notes', [P.note('info', 'Removing a device signs it out immediately.')])] };
       }

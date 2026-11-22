@@ -52,6 +52,14 @@
     img.addEventListener('error', () => img.replaceWith(icon('monitor', size)));
     return img;
   }
+  /** Group label for a device: the browser for web clients, otherwise the app name. */
+  function family(name, app) {
+    if (/web/i.test(app || '') || !app) {
+      const hit = BROWSERS.find(([re]) => new RegExp(re).test(String(name).toLowerCase()));
+      if (hit) return hit[1].split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    return app || name;
+  }
   /** User picture (or initial) for the sidebar and topbar. */
   function avatarFill(el, user) {
     el.replaceChildren();
@@ -138,9 +146,7 @@
       { label: 'Live TV', path: '/dashboard/livetv', icon: 'tv' },
       { label: 'DVR', path: '/dashboard/livetv/recordings', icon: 'disc' }] },
     { section: 'PLUGINS', items: [
-      { label: 'Plugins', path: '/dashboard/plugins', icon: 'plug' },
-      { label: 'Intro Skipper', path: '/dashboard/introskipper', icon: 'skip' },
-      { label: 'Server Sync', path: '/dashboard/serversync', icon: 'sync' }] }, // plugin pages are appended at runtime
+      { label: 'Plugins', path: '/dashboard/plugins', icon: 'plug' }] }, // plugin pages are appended at runtime
     { section: 'ADVANCED', items: [
       { label: 'Networking', path: '/dashboard/networking', icon: 'network' },
       { label: 'API Keys', path: '/dashboard/keys', icon: 'key' },
@@ -148,6 +154,10 @@
       { label: 'Logs', path: '/dashboard/logs', icon: 'logs' },
       { label: 'Scheduled Tasks', path: '/dashboard/tasks', icon: 'clock' }] }
   ];
+  // Plugins that wear a known name get a matching icon; everything else keeps the generic plug.
+  const PLUGIN_ICONS = [[/intro|skip/i, 'skip'], [/sync/i, 'sync'], [/jelly ?admin|theme/i, 'palette'], [/backup/i, 'archive'], [/trakt|scrobbl/i, 'activity'],
+    [/subtitle|opensub/i, 'logs'], [/tv|iptv|epg/i, 'tv'], [/scan|library|media/i, 'library']];
+  const pluginIcon = (name) => (PLUGIN_ICONS.find(([re]) => re.test(name)) || [0, 'plug'])[1];
   const flatNav = () => NAV.flatMap((s) => s.items.flatMap((i) => [i, ...(i.children || [])].map((x) => ({ ...x, section: s.section }))));
 
   // ---- shell -----------------------------------------------------------------
@@ -156,7 +166,8 @@
 
   function isActive(item) {
     const r = route();
-    return r === item.path || (item.children && item.children.some((c) => c.path === r));
+    const full = r + (location.hash.includes('?') ? '?' + location.hash.split('?')[1] : '');
+    return r === item.path || full === item.path || (item.children && item.children.some((c) => c.path === r));
   }
 
   function renderNav() {
@@ -218,8 +229,8 @@
       for (const a of shell.querySelectorAll('.ja-avatar')) avatarFill(a, u);
     }).catch(() => {});
     get('web/ConfigurationPages?EnableInMainMenu=true').then((list) => {
-      pluginItems = list.filter((p) => p.Name !== 'Jelly Admin Theme').map((p) => ({
-        label: p.DisplayName || p.Name, path: '/configurationpage?name=' + encodeURIComponent(p.Name), icon: 'plug' }));
+      pluginItems = list.map((p) => ({
+        label: p.DisplayName || p.Name, path: '/configurationpage?name=' + encodeURIComponent(p.Name), icon: pluginIcon(p.DisplayName || p.Name) }));
       renderNav();
     }).catch(() => {});
   }
@@ -243,10 +254,10 @@
     if (key === lastKey) return;
     lastKey = key;
     if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
-    const page = pages.get(route());
+    const page = query().get('stock') ? null : pages.get(route()); // ?stock=1 opens the original Jellyfin page (library editor, tuner setup...)
     const all = flatNav().find((n) => n.path === route());
     crumbEl.replaceChildren(h('span', { text: 'Server' }), icon('chevron-right', 12),
-      h('b', { text: page ? page.title : all ? all.label : route().split('/').pop() }));
+      h('b', { text: crumbTitle(page, all) }));
     setClass('ja-custom', !!page);
     content.replaceChildren();
     renderNav();
@@ -254,6 +265,13 @@
       try { cleanup = page.render(content, { query: query(), path: route() }) || null; }
       catch (e) { console.error(e); content.append(h('pre', { class: 'ja-error', text: 'Page failed to render: ' + e.message })); }
     }
+  }
+  function crumbTitle(page, all) {
+    if (page) return page.title;
+    if (all) return all.label;
+    if (route() === '/configurationpage') { const n = query().get('name'); const it = pluginItems.find((p) => p.path.endsWith(encodeURIComponent(n || ''))); return it ? it.label : n || 'Plugin'; }
+    const last = route().split('/').pop();
+    return last.charAt(0).toUpperCase() + last.slice(1);
   }
   const titleCase = (s) => s.charAt(0) + s.slice(1).toLowerCase();
 
@@ -263,7 +281,7 @@
   const later = () => { clearTimeout(timer); timer = setTimeout(sync, 50); };
   function page(def) { for (const p of [].concat(def.paths || def.path)) pages.set(p, def); lastKey = null; later(); }
 
-  window.JA = { h, icon, browser, device, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
+  window.JA = { h, icon, browser, device, family, avatarFill, api, get, post, toast, btn, toggle, bytes, ago, query, route, go, page, NAV };
   const start = () => {
     new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     later();
